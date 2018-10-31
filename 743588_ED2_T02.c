@@ -50,24 +50,24 @@
 #define NOS_PERCORRIDOS_IS 			"Busca por %s.\nNos percorridos:\n"
 
 /* Registro do Produto */
-typedef struct {
+typedef struct produto {
 	char pk[TAM_PRIMARY_KEY];
 	char nome[TAM_NOME];
 	char marca[TAM_MARCA];
-	char data[TAM_DATA]; /* DD/MM/AAAA */
+	char data[TAM_DATA]; 	/* DD/MM/AAAA */
 	char ano[TAM_ANO];
 	char preco[TAM_PRECO];
 	char desconto[TAM_DESCONTO];
 	char categoria[TAM_CATEGORIA];
 } Produto;
 
-/*Estrutura da chave de um nó do Índice Primário*/
+/* Estrutura da chave de um nó do Índice Primário */
 typedef struct Chaveip {
 	char pk[TAM_PRIMARY_KEY];
 	int rrn;
 } Chave_ip;
 
-/*Estrutura da chave de um  do Índice Secundário*/
+/* Estrutura da chave de um  do Índice Secundário */
 typedef struct Chaveis {
 	char string[TAM_STRING_INDICE];
 	char pk[TAM_PRIMARY_KEY];
@@ -75,20 +75,20 @@ typedef struct Chaveis {
 
 /* Estrutura das Árvores-B */
 typedef struct nodeip {
-	int num_chaves;  /* numero de chaves armazenadas*/
-	Chave_ip *chave; /* vetor das chaves e rrns [m-1]*/
-	int *desc;		 /* ponteiros para os descendentes, *desc[m]*/
-	char folha;		 /* flag folha da arvore*/
+	int num_chaves;  		/* numero de chaves armazenadas */
+	Chave_ip *chave; 		/* vetor das chaves e rrns [m-1] */
+	int *desc;		 		/* ponteiros para os descendentes, *desc[m] */
+	char folha;		 		/* flag folha da arvore */
 } node_Btree_ip;
 
 typedef struct nodeis {
-	int num_chaves;  /* numero de chaves armazenadas*/
-	Chave_is *chave; /* vetor das chaves e rrns [m-1]*/
-	int *desc;		 /* ponteiros para os descendentes, *desc[m]*/
-	char folha;		 /* flag folha da arvore*/
+	int num_chaves;  		/* numero de chaves armazenadas */
+	Chave_is *chave; 		/* vetor das chaves e rrns [m-1] */
+	int *desc;		 		/* ponteiros para os descendentes, *desc[m] */
+	char folha;		 		/* flag folha da arvore */
 } node_Btree_is;
 
-typedef struct {
+typedef struct indice {
 	int raiz;
 } Indice;
 
@@ -101,16 +101,22 @@ char ARQUIVO_IS[2000 * sizeof(Chave_is)];
 int ordem_ip;
 int ordem_is;
 int nregistros;
-int nregistrosip; /*Número de nós presentes no ARQUIVO_IP*/
-int nregistrosis; /*Número de nós presentes no ARQUIVO_IS*/
+int nregistrosip; 	/* Número de nós presentes no ARQUIVO_IP */
+int nregistrosis; 	/* Número de nós presentes no ARQUIVO_IS */
 
-/*Quantidade de bytes que ocupa cada nó da árvore nos arquivos de índice:*/
+/* Quantidade de bytes que ocupa cada nó da árvore nos arquivos de índice: */
 int tamanho_registro_ip;
 int tamanho_registro_is;
 
 /* ==========================================================================
  * ========================= PROTÓTIPOS DAS FUNÇÕES =========================
  * ========================================================================== */
+
+// Recuperar registro em determinado RRN e devolver em uma struct Produto
+Produto recuperar_registro(int rrn);
+
+
+
 
 /* ==========================================================================
  * ========================= PROTÓTIPOS DAS FUNÇÕES =========================
@@ -127,8 +133,7 @@ void listar(Indice iprimary, Indice ibrand);
 
 /*******************************************************/
 
-/* Recebe do usuário uma string simulando o arquivo completo e retorna o número
-  * de registros. */
+/* Recebe do usuário uma string simulando o arquivo completo e retorna o número de registros. */
 int carregar_arquivo();
 
 /* (Re)faz o Cria iprimary*/
@@ -137,25 +142,25 @@ void criar_iprimary(Indice *iprimary);
 /* (Re)faz o índice de jogos  */
 void criar_ibrand(Indice *ibrand);
 
-/*Escreve um nó da árvore no arquivo de índice,
-* O terceiro parametro serve para informar qual indice se trata */
+/* Escreve um nó da árvore no arquivo de índice,
+*  O terceiro parametro serve para informar qual indice se trata */
 void write_btree(void *salvar, int rrn, char ip);
 
-/*Lê um nó do arquivo de índice e retorna na estrutura*/
+/* Lê um nó do arquivo de índice e retorna na estrutura*/
 void *read_btree(int rrn, char ip);
 
 /* Aloca um nó de árvore para ser utilizado em memória primária, o primeiro parametro serve para informar que árvore se trata
-* É conveniente que essa função também inicialize os campos necessários com valores nulos*/
+*  É conveniente que essa função também inicialize os campos necessários com valores nulos */
 void *criar_no(char ip);
 
-/*Libera todos os campos dinâmicos do nó, inclusive ele mesmo*/
+/* Libera todos os campos dinâmicos do nó, inclusive ele mesmo*/
 void libera_no(void *node, char ip);
 
 /*
 *   Caro aluno,
-*   caso não queira trabalhar com void*, é permitido dividir as funções que utilizam
-* em duas, sendo uma para cada índice...
-* Um exemplo, a write_btree e read_btree ficariam como:
+*   	caso não queira trabalhar com void*, é permitido dividir as funções que utilizam
+*   	em duas, sendo uma para cada índice...
+*   Um exemplo, a write_btree e read_btree ficariam como:
 *
 *   void write_btree_ip(node_Btree_ip *salvar, int rrn),  node_Btree_ip *read_btree_ip(int rrn),
 *   void write_btree_is(node_Btree_is *salvar, int rrn) e node_Btree_is *read_btree_is(int rrn).
@@ -167,6 +172,8 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Jogo j);
 /* Exibe o jogo */
 int exibir_registro(int rrn);
 
+
+
 int main()
 {
 	char *p; /* # */
@@ -177,18 +184,24 @@ int main()
 	if (carregarArquivo)
 		nregistros = carregar_arquivo();
 
+
+	/* Recebe as ordens dos índices PRIMÁRIO e SECUNDÁRIO */
 	scanf("%d %d%*c", &ordem_ip, &ordem_is);
+
 
 	tamanho_registro_ip = ordem_ip * 3 + 4 + (-1 + ordem_ip) * 14;
 	tamanho_registro_is = ordem_is * 3 + 4 + (-1 + ordem_is) * (TAM_STRING_INDICE + 9);
+
 
 	/* Índice primário */
 	Indice iprimary;
 	criar_iprimary(&iprimary);
 
+
 	/* Índice secundário de nomes dos Produtos */
 	Indice ibrand;
 	criar_ibrand(&ibrand);
+
 
 	/* Execução do programa */
 	int opcao = 0;
@@ -224,7 +237,7 @@ int main()
 			printf("%s\n", (*ARQUIVO != '\0') ? ARQUIVO : ARQUIVO_VAZIO);
 			break;
 		
-		case 6: /* Imprime o Arquivo de Índice Primário*/
+		case 6: /* Imprime o Arquivo de Índice Primário */
 			printf(INICIO_INDICE_PRIMARIO);
 			if (!*ARQUIVO_IP)
 				puts(ARQUIVO_VAZIO);
@@ -236,7 +249,7 @@ int main()
 				}
 			break;
 		
-		case 7: /* Imprime o Arquivo de Índice Secundário*/
+		case 7: /* Imprime o Arquivo de Índice Secundário */
 			printf(INICIO_INDICE_SECUNDARIO);
 			if (!*ARQUIVO_IS)
 				puts(ARQUIVO_VAZIO);
@@ -248,7 +261,7 @@ int main()
 				}
 			break;
 		
-		case 8: /*Libera toda memória alocada dinâmicamente (se ainda houver) e encerra*/
+		case 8: /* Libera toda memória alocada dinâmicamente (se ainda houver) e encerra */
 			return 0;
 		
 		default: /* exibe mensagem de erro */
@@ -270,6 +283,54 @@ int carregar_arquivo()
 	scanf("%[^\n]\n", ARQUIVO);
 	return strlen(ARQUIVO) / TAM_REGISTRO;
 }
+
+/* Gera a chave primária */
+void gerarChave(Produto *P) {
+    P->pk[0] = '\0';                // Garante que os dados serão concatenados corretamente na chave primária
+    strncat(P->pk, P->nome, 2);     // N1N2 
+    strncat(P->pk, P->marca, 2);    // M1M2
+ 
+    char *dAux;                     // DDMM
+    char dataAux[11];               // Cria uma string dataAux para não perder o valor da data original com o strtok
+    strcpy(dataAux, P->data);
+    dAux = strtok(dataAux, "/");    // DD
+    strncat(P->pk, dAux, 2);
+    dAux = strtok(NULL, "/");       // MM
+    strncat(P->pk, dAux, 2);
+    
+    strncat(P->pk, P->ano, 2);      // AL
+}
+
+/* Recupera o registro no ARQUIVO de dados e retorna os dados na struct Produto */
+Produto recuperar_registro(int rrn)
+{
+    char temp[193], *p;
+    strncpy(temp, ARQUIVO + ((rrn)*192), 192);
+    temp[192] = '\0';
+    Produto j;
+    gerarChave(&j);
+
+	// Recebe os dados da string temp retiradada do ARQUIVO de dados em determinado RRN
+	p = strtok(temp, "@");
+	strcpy(j.pk, p);
+	p = strtok(NULL, "@");
+	strcpy(j.nome, p);
+	p = strtok(NULL, "@");
+	strcpy(j.marca, p);
+	p = strtok(NULL, "@");
+	strcpy(j.data, p);
+	p = strtok(NULL, "@");
+	strcpy(j.ano, p);
+	p = strtok(NULL, "@");
+	strcpy(j.preco, p);
+	p = strtok(NULL, "@");
+	strcpy(j.desconto, p);
+	p = strtok(NULL, "#");
+	strcpy(j.categoria, p);
+
+    return j;
+}
+
 
 /* Exibe o Produto */
 int exibir_registro(int rrn)
