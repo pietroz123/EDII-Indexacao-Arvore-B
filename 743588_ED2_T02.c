@@ -115,6 +115,9 @@ int tamanho_registro_is;
 // Recuperar registro em determinado RRN e devolver em uma struct Produto
 Produto recuperar_registro(int rrn);
 
+// Gera a chave primária
+void gerar_chave(Produto *P);
+
 
 
 
@@ -136,10 +139,10 @@ void listar(Indice iprimary, Indice ibrand);
 /* Recebe do usuário uma string simulando o arquivo completo e retorna o número de registros. */
 int carregar_arquivo();
 
-/* (Re)faz o Cria iprimary*/
+/* (Re)faz o índice primário */
 void criar_iprimary(Indice *iprimary);
 
-/* (Re)faz o índice de jogos  */
+/* (Re)faz o índice de marcas  */
 void criar_ibrand(Indice *ibrand);
 
 /* Escreve um nó da árvore no arquivo de índice,
@@ -167,9 +170,9 @@ void libera_no(void *node, char ip);
 */
 
 /* Atualiza os dois índices com o novo registro inserido */
-void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Jogo j);
+void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P);
 
-/* Exibe o jogo */
+/* Exibe o produto */
 int exibir_registro(int rrn);
 
 
@@ -285,7 +288,7 @@ int carregar_arquivo()
 }
 
 /* Gera a chave primária */
-void gerarChave(Produto *P) {
+void gerar_chave(Produto *P) {
     P->pk[0] = '\0';                // Garante que os dados serão concatenados corretamente na chave primária
     strncat(P->pk, P->nome, 2);     // N1N2 
     strncat(P->pk, P->marca, 2);    // M1M2
@@ -308,9 +311,9 @@ Produto recuperar_registro(int rrn)
     strncpy(temp, ARQUIVO + ((rrn)*192), 192);
     temp[192] = '\0';
     Produto j;
-    gerarChave(&j);
+    gerar_chave(&j);
 
-	// Recebe os dados da string temp retiradada do ARQUIVO de dados em determinado RRN
+	// Recebe os dados da string temp retirada do ARQUIVO de dados em determinado RRN
 	p = strtok(temp, "@");
 	strcpy(j.pk, p);
 	p = strtok(NULL, "@");
@@ -361,3 +364,88 @@ int exibir_registro(int rrn)
 
 	return 1;
 }
+
+
+/* =====================================================================================
+   ========================== CRIAÇÃO DOS INDICES ======================================
+   ===================================================================================== */
+
+void criar_iprimary(Indice *iprimary) { //todo
+	
+}
+
+void criar_ibrand(Indice *ibrand) { //todo
+	
+}
+
+
+/* =====================================================================================
+   ======================== INTERAÇÃO COM O USUÁRIO ====================================
+   ===================================================================================== */
+
+/**** INSERÇÃO ****/ //todo
+
+void ler_entrada(Produto *novo) {
+	printf("ler_entrada():\n");
+    fscanf(stdin, "%[^\n]s", novo->nome);
+    getchar();
+    fscanf(stdin, "%[^\n]s", novo->marca);
+    getchar();
+    fscanf(stdin, "%[^\n]s", novo->data);
+    getchar();
+    fscanf(stdin, "%[^\n]s", novo->ano);
+    getchar();
+    fscanf(stdin, "%[^\n]s", novo->preco);
+    getchar();
+    fscanf(stdin, "%[^\n]s", novo->desconto);
+    getchar();
+    fscanf(stdin, "%[^\n]s", novo->categoria);
+    getchar();
+}
+void cadastrar(Indice *iprimary, Indice *ibrand) {
+
+	char entrada[193];
+	Produto novo;
+
+
+	// Lê a entrada do usuário e gera a chave primária
+	ler_entrada(&novo);
+	gerar_chave(&novo);
+
+	// Coloca os dados na string entrada[]
+	sprintf(entrada, "%s@%s@%s@%s@%s@%s@%s@%s@", novo.pk, novo.nome, novo.marca, novo.data, novo.ano, novo.preco, novo.desconto, novo.categoria);
+
+	// Completa os espaços restantes com '#'
+    int necessarios = 192 - strlen(entrada);
+    for (int i = 0; i < necessarios; i++)
+        strcat(entrada, "#");
+
+	// Coloca a entrada no ARQUIVO de dados
+	strcat(ARQUIVO, entrada);
+
+	
+
+
+}
+
+
+/**** ALTERARAÇÃO ****/ //todo
+
+int alterar(Indice iprimary) {
+
+}
+
+
+/**** BUSCA ****/ //todo
+
+void buscar(Indice iprimary, Indice ibrand) {
+
+}
+
+
+/**** LISTAGEM ****/ //todo
+
+void listar(Indice iprimary, Indice ibrand) {
+
+}
+
