@@ -118,12 +118,22 @@ Produto recuperar_registro(int rrn);
 // Gera a chave primária
 void gerar_chave(Produto *P);
 
+// Exibe o produto
+int exibir_registro(int rrn);
+
+/* Recebe do usuário uma string simulando o arquivo completo e retorna o número de registros. */
+int carregar_arquivo();
+
+/* (Re)faz o índice primário */
+void criar_iprimary(Indice *iprimary);
+
+/* (Re)faz o índice de marcas  */
+void criar_ibrand(Indice *ibrand);
+
+// Atualiza os dois índices com o novo registro inserido
+void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P);
 
 
-
-/* ==========================================================================
- * ========================= PROTÓTIPOS DAS FUNÇÕES =========================
- * ========================================================================== */
 
 /********************FUNÇÕES DO MENU*********************/
 void cadastrar(Indice *iprimary, Indice *ibrand);
@@ -136,28 +146,36 @@ void listar(Indice iprimary, Indice ibrand);
 
 /*******************************************************/
 
-/* Recebe do usuário uma string simulando o arquivo completo e retorna o número de registros. */
-int carregar_arquivo();
 
-/* (Re)faz o índice primário */
-void criar_iprimary(Indice *iprimary);
+/* ==========================================================================
+ * ========================= PROTÓTIPOS DAS FUNÇÕES =========================
+ * ============================= DAS ÁRVORES B ============================== 
+ * ========================================================================== */
 
-/* (Re)faz o índice de marcas  */
-void criar_ibrand(Indice *ibrand);
+// Busca por um nó com determinada chave primária
+void *b_tree_search(void *raiz, char *pk);
 
-/* Escreve um nó da árvore no arquivo de índice,
-*  O terceiro parametro serve para informar qual indice se trata */
+
+// Escreve um nó da árvore no arquivo de índice. O terceiro parametro serve para informar qual indice se trata
 void write_btree(void *salvar, int rrn, char ip);
+void write_btree_ip(node_Btree_ip *salvar, int rrn);
+void write_btree_is(node_Btree_is *salvar, int rrn);
 
-/* Lê um nó do arquivo de índice e retorna na estrutura*/
+// Lê um nó do arquivo de índice e retorna na estrutura
 void *read_btree(int rrn, char ip);
+node_Btree_ip *read_btree_ip(int rrn);
+node_Btree_is *read_btree_is(int rrn);
 
-/* Aloca um nó de árvore para ser utilizado em memória primária, o primeiro parametro serve para informar que árvore se trata
-*  É conveniente que essa função também inicialize os campos necessários com valores nulos */
+// Aloca um nó de árvore para ser utilizado em memória primária, o primeiro parametro serve para informar que árvore se trata
+// É conveniente que essa função também inicialize os campos necessários com valores nulos
 void *criar_no(char ip);
+node_Btree_ip *criar_no_ip();
+node_Btree_is *criar_no_is();
 
-/* Libera todos os campos dinâmicos do nó, inclusive ele mesmo*/
+// Libera todos os campos dinâmicos do nó, inclusive ele mesmo
 void libera_no(void *node, char ip);
+
+
 
 /*
 *   Caro aluno,
@@ -168,12 +186,6 @@ void libera_no(void *node, char ip);
 *   void write_btree_ip(node_Btree_ip *salvar, int rrn),  node_Btree_ip *read_btree_ip(int rrn),
 *   void write_btree_is(node_Btree_is *salvar, int rrn) e node_Btree_is *read_btree_is(int rrn).
 */
-
-/* Atualiza os dois índices com o novo registro inserido */
-void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P);
-
-/* Exibe o produto */
-int exibir_registro(int rrn);
 
 
 
@@ -371,11 +383,11 @@ int exibir_registro(int rrn)
    ===================================================================================== */
 
 void criar_iprimary(Indice *iprimary) { //todo
-	
+
 }
 
 void criar_ibrand(Indice *ibrand) { //todo
-	
+
 }
 
 
@@ -386,20 +398,19 @@ void criar_ibrand(Indice *ibrand) { //todo
 /**** INSERÇÃO ****/ //todo
 
 void ler_entrada(Produto *novo) {
-	printf("ler_entrada():\n");
-    fscanf(stdin, "%[^\n]s", novo->nome);
+    scanf("%[^\n]s", novo->nome);
     getchar();
-    fscanf(stdin, "%[^\n]s", novo->marca);
+    scanf("%[^\n]s", novo->marca);
     getchar();
-    fscanf(stdin, "%[^\n]s", novo->data);
+    scanf("%[^\n]s", novo->data);
     getchar();
-    fscanf(stdin, "%[^\n]s", novo->ano);
+    scanf("%[^\n]s", novo->ano);
     getchar();
-    fscanf(stdin, "%[^\n]s", novo->preco);
+    scanf("%[^\n]s", novo->preco);
     getchar();
-    fscanf(stdin, "%[^\n]s", novo->desconto);
+    scanf("%[^\n]s", novo->desconto);
     getchar();
-    fscanf(stdin, "%[^\n]s", novo->categoria);
+    scanf("%[^\n]s", novo->categoria);
     getchar();
 }
 void cadastrar(Indice *iprimary, Indice *ibrand) {
@@ -423,13 +434,13 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	// Coloca a entrada no ARQUIVO de dados
 	strcat(ARQUIVO, entrada);
 
-	
+	nregistros++;
 
 
 }
 
 
-/**** ALTERARAÇÃO ****/ //todo
+/**** ALTERAÇÃO ****/ //todo
 
 int alterar(Indice iprimary) {
 
@@ -449,3 +460,56 @@ void listar(Indice iprimary, Indice ibrand) {
 
 }
 
+
+/* =====================================================================================
+   ================================ FUNÇÕES ÁRVORE-B ===================================
+   ===================================================================================== */
+
+
+/* Escreve um nó da árvore no arquivo de índice. O terceiro parametro serve para informar qual indice se trata */
+void write_btree(void *salvar, int rrn, char ip) {
+
+
+}
+
+void write_btree_ip(node_Btree_ip *salvar, int rrn) {
+
+
+}
+
+void write_btree_is(node_Btree_is *salvar, int rrn) {
+
+
+}
+
+
+/* Lê um nó do arquivo de índice e retorna na estrutura*/
+void *read_btree(int rrn, char ip) {
+
+
+}
+
+node_Btree_ip *read_btree_ip(int rrn) {
+
+
+}
+
+node_Btree_is *read_btree_is(int rrn) {
+
+
+}
+
+
+// Aloca um nó de árvore para ser utilizado em memória primária, o primeiro parametro serve para informar que árvore se trata
+// É conveniente que essa função também inicialize os campos necessários com valores nulos
+void *criar_no(char ip) {
+
+}
+
+node_Btree_ip *criar_no_ip() {
+
+}
+
+node_Btree_is *criar_no_is() {
+
+}
