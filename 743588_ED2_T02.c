@@ -383,11 +383,11 @@ int exibir_registro(int rrn)
    ===================================================================================== */
 
 void criar_iprimary(Indice *iprimary) { //todo
-
+	iprimary->raiz = -1;
 }
 
 void criar_ibrand(Indice *ibrand) { //todo
-
+	ibrand->raiz = -1;
 }
 
 
@@ -434,11 +434,22 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	// Coloca a entrada no ARQUIVO de dados
 	strcat(ARQUIVO, entrada);
 
+	inserir_registro_indices(iprimary, ibrand, novo);
 	nregistros++;
 
 
 }
+void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 
+	if (iprimary->raiz == -1) {
+		// Árvore vazia, coloca o produto na raiz
+		node_Btree_ip *novo_no = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
+		strcpy(novo_no->chave[0].pk, P.pk);
+		
+		write_btree_ip(novo_no, 0);
+	}	
+
+}
 
 /**** ALTERAÇÃO ****/ //todo
 
