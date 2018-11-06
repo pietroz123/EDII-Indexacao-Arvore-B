@@ -447,14 +447,9 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 
 	if (iprimary->raiz == -1) {
 		// Árvore vazia, insere o produto na raiz
-		node_Btree_ip *novo = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
-		novo->folha = 'F';
-		novo->num_chaves = 1;
+		node_Btree_ip *novo = criar_no_ip();
+		novo->num_chaves++;
 
-		// Aloca os vetores
-		novo->chave = (Chave_ip*) malloc((ordem_ip-1) * sizeof(Chave_ip));	/* MAXchaves = M-1 */
-		novo->desc = (int*) malloc((ordem_ip) * sizeof(int));				/* MAXfilhos = M */
-		
 		novo->chave[0].rrn = rrn;
 		strcpy(novo->chave[0].pk, P.pk);
 
@@ -512,7 +507,16 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
 	printf("nChaves: %s\n", nChaves);
 
-	
+	// for (int i = 0; i < ordem_ip-1; i++) {
+		char pk[TAM_PRIMARY_KEY];
+		// if (salvar[0])
+		sprintf(pk, "%s", salvar->chave[0].pk);
+
+	// }
+
+	printf("pk: %s\n", pk);
+
+
 
 
 
@@ -550,7 +554,22 @@ void *criar_no(char ip) {
 }
 
 node_Btree_ip *criar_no_ip() {
+	
+	node_Btree_ip *novo = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
+	// Aloca os vetores
+	novo->chave = (Chave_ip*) malloc((ordem_ip-1) * sizeof(Chave_ip));	/* MAXchaves = M-1 */
+	novo->desc = (int*) malloc((ordem_ip) * sizeof(int));				/* MAXfilhos = M */
+	// Inicializa os rrn's das chaves com -1 e os descendentes com -1
+	for (int i = 0; i < ordem_ip-1; i++)
+		novo->chave[i].rrn = -1;
+	for (int i = 0; i < ordem_ip; i++)
+		novo->desc[i] = -1;
+	// Cria o nó como folha
+	novo->folha = 'F';
+	// O numero de chaves inicialmente é 0
+	novo->num_chaves = 0;
 
+	return novo;
 }
 
 node_Btree_is *criar_no_is() {
