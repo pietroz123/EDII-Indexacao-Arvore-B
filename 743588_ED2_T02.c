@@ -433,9 +433,8 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	// Coloca a entrada no ARQUIVO de dados
 	strcat(ARQUIVO, entrada);
 
-	exibir_registro(0);
-	// inserir_registro_indices(iprimary, ibrand, novo);
-	// nregistros++;
+	inserir_registro_indices(iprimary, ibrand, novo);
+	nregistros++;
 
 
 }
@@ -444,29 +443,29 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 	int rrn = nregistros;
 	int i;
 
-	exibir_registro(0);
+	exibir_registro(rrn);
 
 	if (iprimary->raiz == -1) {
 		// Árvore vazia, insere o produto na raiz
-		node_Btree_ip *raiz = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
+		node_Btree_ip *novo = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
+		novo->folha = 'F';
+		novo->num_chaves = 1;
+
+		// Aloca os vetores
+		novo->chave = (Chave_ip*) malloc((ordem_ip-1) * sizeof(Chave_ip));	/* MAXchaves = M-1 */
+		novo->desc = (int*) malloc((ordem_ip) * sizeof(int));				/* MAXfilhos = M */
 		
-		for (i = 0; i < raiz->num_chaves; i++)
-			i++;
-		printf("passou");
+		novo->chave[0].rrn = rrn;
+		strcpy(novo->chave[0].pk, P.pk);
 
-		// Insere na posição i da raiz
-		strcpy(raiz->chave[i].pk, P.pk);
-		raiz->chave[i].rrn = rrn;
+		iprimary->raiz = rrn;
 
-		for (int i = 0; i < ordem_ip; i++)
-			raiz->desc[i] = -1;
+		// printf("novo->num_chaves: %d\n", novo->num_chaves);
+		// printf("novo->folha: %c\n", novo->folha);
+		// printf("novo->chave->pk: %s\n", novo->chave->pk);
+		// printf("novo->chave->rrn: %d\n", novo->chave->rrn);
 
-		// printf("raiz->num_chaves: %d\n", raiz->num_chaves);
-		// printf("raiz->folha: %c\n", raiz->folha);
-		// printf("raiz->chave->pk: %s\n", raiz->chave->pk);
-		// printf("raiz->chave->rrn: %d\n", raiz->chave->rrn);
-
-		write_btree_ip(raiz, 0);
+		write_btree_ip(novo, rrn);
 	}	
 
 }
@@ -504,6 +503,19 @@ void write_btree(void *salvar, int rrn, char ip) {
 }
 
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
+
+	char registroip[nregistrosip+1];	/* String para armazenar o novo registro */
+	registroip[nregistrosip] = '\0';
+
+
+	char nChaves[4];
+	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
+	printf("nChaves: %s\n", nChaves);
+
+	
+
+
+
 
 
 }
