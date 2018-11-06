@@ -499,25 +499,35 @@ void write_btree(void *salvar, int rrn, char ip) {
 
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
-	char registroip[nregistrosip+1];	/* String para armazenar o novo registro */
-	registroip[nregistrosip] = '\0';
-
+	char registroIp[nregistrosip+1];	/* String para armazenar o novo registro */
+	registroIp[nregistrosip] = '\0';
 
 	char nChaves[4];
+	char pk[TAM_PRIMARY_KEY];
+	char RRN[5];
+
+	// 3 bytes para o NÚMERO DE CHAVES 
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
-	printf("nChaves: %s\n", nChaves);
+	strcat(registroIp, nChaves);
 
-	// for (int i = 0; i < ordem_ip-1; i++) {
-		char pk[TAM_PRIMARY_KEY];
-		// if (salvar[0])
-		sprintf(pk, "%s", salvar->chave[0].pk);
+	// 10 bytes da CHAVE PRIMÁRIA
+	for (int i = 0; i < ordem_ip-1; i++) {
+		
+		if (salvar->chave[i].rrn != -1) {
+			sprintf(pk, "%s", salvar->chave[0].pk);
+			snprintf(RRN, sizeof(RRN), "%04d", salvar->chave[0].rrn);
+		} else {
+			sprintf(pk, "##########");
+			sprintf(RRN, "####");
+		}
+		strcat(registroIp, pk);
+		strcat(registroIp, RRN);
 
-	// }
+		// printf("pk[%d]: %s\n", i, pk);
 
-	printf("pk: %s\n", pk);
+	}
 
-
-
+	printf("registroIp: %s\n", registroIp);
 
 
 
