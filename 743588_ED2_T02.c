@@ -455,11 +455,6 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 
 		iprimary->raiz = rrn;
 
-		// printf("novo->num_chaves: %d\n", novo->num_chaves);
-		// printf("novo->folha: %c\n", novo->folha);
-		// printf("novo->chave->pk: %s\n", novo->chave->pk);
-		// printf("novo->chave->rrn: %d\n", novo->chave->rrn);
-
 		write_btree_ip(novo, rrn);
 	}	
 
@@ -505,6 +500,7 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 	char nChaves[4];
 	char pk[TAM_PRIMARY_KEY];
 	char RRN[5];
+	char folha = salvar->folha;
 
 	// 3 bytes para o NÚMERO DE CHAVES 
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
@@ -512,7 +508,6 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 	// 10 bytes da CHAVE PRIMÁRIA
 	for (int i = 0; i < ordem_ip-1; i++) {
-		
 		if (salvar->chave[i].rrn != -1) {
 			sprintf(pk, "%s", salvar->chave[0].pk);
 			snprintf(RRN, sizeof(RRN), "%04d", salvar->chave[0].rrn);
@@ -522,12 +517,16 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 		}
 		strcat(registroIp, pk);
 		strcat(registroIp, RRN);
-
-		// printf("pk[%d]: %s\n", i, pk);
-
 	}
 
-	printf("registroIp: %s\n", registroIp);
+	// 1 byte FOLHA (F) ou NÃO (N)
+	if (folha == 'F')
+		strcat(registroIp, "F");
+	else
+		strcat(registroIp, "N");
+
+
+
 
 
 
