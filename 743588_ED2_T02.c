@@ -323,7 +323,6 @@ Produto recuperar_registro(int rrn)
     strncpy(temp, ARQUIVO + ((rrn)*192), 192);
     temp[192] = '\0';
     Produto j;
-    gerar_chave(&j);
 
 	// Recebe os dados da string temp retirada do ARQUIVO de dados em determinado RRN
 	p = strtok(temp, "@");
@@ -340,7 +339,7 @@ Produto recuperar_registro(int rrn)
 	strcpy(j.preco, p);
 	p = strtok(NULL, "@");
 	strcpy(j.desconto, p);
-	p = strtok(NULL, "#");
+	p = strtok(NULL, "@");
 	strcpy(j.categoria, p);
 
     return j;
@@ -434,19 +433,40 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	// Coloca a entrada no ARQUIVO de dados
 	strcat(ARQUIVO, entrada);
 
-	inserir_registro_indices(iprimary, ibrand, novo);
-	nregistros++;
+	exibir_registro(0);
+	// inserir_registro_indices(iprimary, ibrand, novo);
+	// nregistros++;
 
 
 }
 void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 
+	int rrn = nregistros;
+	int i;
+
+	exibir_registro(0);
+
 	if (iprimary->raiz == -1) {
-		// Árvore vazia, coloca o produto na raiz
-		node_Btree_ip *novo_no = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
-		strcpy(novo_no->chave[0].pk, P.pk);
+		// Árvore vazia, insere o produto na raiz
+		node_Btree_ip *raiz = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
 		
-		write_btree_ip(novo_no, 0);
+		for (i = 0; i < raiz->num_chaves; i++)
+			i++;
+		printf("passou");
+
+		// Insere na posição i da raiz
+		strcpy(raiz->chave[i].pk, P.pk);
+		raiz->chave[i].rrn = rrn;
+
+		for (int i = 0; i < ordem_ip; i++)
+			raiz->desc[i] = -1;
+
+		// printf("raiz->num_chaves: %d\n", raiz->num_chaves);
+		// printf("raiz->folha: %c\n", raiz->folha);
+		// printf("raiz->chave->pk: %s\n", raiz->chave->pk);
+		// printf("raiz->chave->rrn: %d\n", raiz->chave->rrn);
+
+		write_btree_ip(raiz, 0);
 	}	
 
 }
