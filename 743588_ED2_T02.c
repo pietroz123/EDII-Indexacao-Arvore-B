@@ -589,7 +589,6 @@ node_Btree_ip *read_btree_ip(int rrn) {
 	int i = 0;
 	char nChaves[4];						nChaves[0] = '\0';
 	char folha;								
-	char descendente[4];					descendente[0] = '\0';
 
 	node_Btree_ip *recuperar = criar_no_ip();
 
@@ -612,6 +611,21 @@ node_Btree_ip *read_btree_ip(int rrn) {
 
 	}
 	
+	// Recupera FOLHA ou NÃO
+	recuperar->folha = *r;
+	r += 1;
+
+
+	for (int n = 0; n < ordem_ip; n++) {
+
+
+		char descendente[4];	descendente[0] = '\0';
+		strncat(descendente, r, 3);
+		if (n < ordem_ip-1)
+			r += 3;
+
+	}
+
 
 
 
