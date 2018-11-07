@@ -437,12 +437,16 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	inserir_registro_indices(iprimary, ibrand, novo);
 	nregistros++;
 
+	printf("nregistros: %d\n", nregistros);
+	printf("nregistrosip: %d\n", nregistrosip);
+	printf("nregistrosis: %d\n", nregistrosis);
+
 
 }
 void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 
 	int rrn = nregistros;
-	int i;
+	int i = 0;
 
 	if (iprimary->raiz == -1) {
 		// Árvore vazia, insere o produto na raiz
@@ -455,7 +459,29 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 		iprimary->raiz = rrn;
 
 		write_btree_ip(novo, rrn);
-	}	
+		nregistrosip++;
+	}
+	else {
+		// CASO 1: Só existe a raiz
+		if (nregistrosip == 1) {
+
+			// Recupera o nó da raiz
+			node_Btree_ip *atual = read_btree_ip(iprimary->raiz);
+			
+			// // Encontra a posição para inserir
+			// while (i < ordem_ip)
+			// 	i++;
+			// if (atual->chave[i].rrn != -1) {
+			// 	atual->num_chaves++;
+			// 	atual->chave[i].rrn = rrn;
+			// 	strcpy(atual->chave[i].pk, P.pk);
+			// 	write_btree_ip(atual, rrn);
+			// }
+
+		}
+
+
+	}
 
 }
 
@@ -493,7 +519,7 @@ void write_btree(void *salvar, int rrn, char ip) {
 
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
-	char registroIp[tamanho_registro_ip+1];	/* String para armazenar o novo registro */
+	char registroIp[tamanho_registro_ip+1];		/* String para armazenar o novo registro */
 	registroIp[tamanho_registro_ip] = '\0';
 
 	char nChaves[4];
@@ -537,7 +563,7 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 	/* Coloca no ARQUIVO PRIMÁRIO */
 	strcat(ARQUIVO_IP, registroIp);
-	
+
 }
 
 void write_btree_is(node_Btree_is *salvar, int rrn) {
@@ -553,6 +579,11 @@ void *read_btree(int rrn, char ip) {
 }
 
 node_Btree_ip *read_btree_ip(int rrn) {
+
+	char temp[tamanho_registro_ip+1], *p;
+	temp[tamanho_registro_ip] = '\0';
+	strncpy(temp, ARQUIVO_IP + ((rrn)*tamanho_registro_ip), tamanho_registro_ip);
+
 
 
 }
@@ -571,17 +602,22 @@ void *criar_no(char ip) {
 
 node_Btree_ip *criar_no_ip() {
 	
+	// Aloca o novo nó
 	node_Btree_ip *novo = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
+	
 	// Aloca os vetores
 	novo->chave = (Chave_ip*) malloc((ordem_ip-1) * sizeof(Chave_ip));	/* MAXchaves = M-1 */
 	novo->desc = (int*) malloc((ordem_ip) * sizeof(int));				/* MAXfilhos = M */
+
 	// Inicializa os rrn's das chaves com -1 e os descendentes com -1
 	for (int i = 0; i < ordem_ip-1; i++)
 		novo->chave[i].rrn = -1;
 	for (int i = 0; i < ordem_ip; i++)
 		novo->desc[i] = -1;
+	
 	// Cria o nó como folha
 	novo->folha = 'F';
+	
 	// O numero de chaves inicialmente é 0
 	novo->num_chaves = 0;
 
