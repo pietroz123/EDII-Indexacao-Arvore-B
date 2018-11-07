@@ -584,6 +584,35 @@ node_Btree_ip *read_btree_ip(int rrn) {
 	temp[tamanho_registro_ip] = '\0';
 	strncpy(temp, ARQUIVO_IP + ((rrn)*tamanho_registro_ip), tamanho_registro_ip);
 
+	char *r = temp;
+
+	int i = 0;
+	char nChaves[4];						nChaves[0] = '\0';
+	char folha;								
+	char descendente[4];					descendente[0] = '\0';
+
+	node_Btree_ip *recuperar = criar_no_ip();
+
+	// Recupera o NÚMERO DE CHAVES
+	strncat(nChaves, r, 3);
+	r += 3;
+
+
+
+	// Recupera as CHAVES e RRNS
+	for (int n = 0; n < ordem_ip-1; n++) {
+
+		char chavePrimaria[TAM_PRIMARY_KEY];	chavePrimaria[0] = '\0';
+		char RRN[5];							RRN[0] = '\0';
+
+		strncat(chavePrimaria, r, 10);
+		r += 10;
+		strncat(RRN, r, 4);
+		r += 4;
+
+	}
+	
+
 
 
 }
