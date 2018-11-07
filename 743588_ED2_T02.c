@@ -204,6 +204,7 @@ int main()
 	scanf("%d %d%*c", &ordem_ip, &ordem_is);
 
 
+
 	tamanho_registro_ip = ordem_ip * 3 + 4 + (-1 + ordem_ip) * 14;
 	tamanho_registro_is = ordem_is * 3 + 4 + (-1 + ordem_is) * (TAM_STRING_INDICE + 9);
 
@@ -443,8 +444,6 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 	int rrn = nregistros;
 	int i;
 
-	exibir_registro(rrn);
-
 	if (iprimary->raiz == -1) {
 		// Árvore vazia, insere o produto na raiz
 		node_Btree_ip *novo = criar_no_ip();
@@ -494,13 +493,14 @@ void write_btree(void *salvar, int rrn, char ip) {
 
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
-	char registroIp[nregistrosip+1];	/* String para armazenar o novo registro */
-	registroIp[nregistrosip] = '\0';
+	char registroIp[tamanho_registro_ip+1];	/* String para armazenar o novo registro */
+	registroIp[tamanho_registro_ip] = '\0';
 
 	char nChaves[4];
-	char pk[TAM_PRIMARY_KEY];
+	char chavePrimaria[TAM_PRIMARY_KEY];
 	char RRN[5];
 	char folha = salvar->folha;
+	char descendente[4];
 
 	// 3 bytes para o NÚMERO DE CHAVES 
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
@@ -509,13 +509,13 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 	// 10 bytes da CHAVE PRIMÁRIA
 	for (int i = 0; i < ordem_ip-1; i++) {
 		if (salvar->chave[i].rrn != -1) {
-			sprintf(pk, "%s", salvar->chave[0].pk);
+			sprintf(chavePrimaria, "%s", salvar->chave[0].pk);
 			snprintf(RRN, sizeof(RRN), "%04d", salvar->chave[0].rrn);
 		} else {
-			sprintf(pk, "##########");
+			sprintf(chavePrimaria, "##########");
 			sprintf(RRN, "####");
 		}
-		strcat(registroIp, pk);
+		strcat(registroIp, chavePrimaria);
 		strcat(registroIp, RRN);
 	}
 
@@ -525,12 +525,19 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 	else
 		strcat(registroIp, "N");
 
+	// 3 bytes para os DESCENDENTES
+	for (int i = 0; i < ordem_ip; i++) {
+		if (salvar->desc[i] != -1) {
+			snprintf(descendente, sizeof(descendente), "%03d", salvar->desc[i]);
+		} else {
+			sprintf(descendente, "***");
+		}
+		strcat(registroIp, descendente);
+	}
 
-
-
-
-
-
+	/* Coloca no ARQUIVO PRIMÁRIO */
+	strcat(ARQUIVO_IP, registroIp);
+	
 }
 
 void write_btree_is(node_Btree_is *salvar, int rrn) {
