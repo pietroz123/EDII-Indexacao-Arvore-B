@@ -1,0 +1,55 @@
+
+1) GEMS
+2) MOLO
+3) TEWA
+4) PRIN
+5) FOCO
+6) MECR
+7) MEKI
+8) FOEV
+9) PLAS
+
+
+------------------------------------------------------------------
+DADOS
+------------------------------------------------------------------
+
+
+-->  GEMS
+-->  GEMS @ MOLO
+-->  GEMS @ MOLO @ TEWA
+-->  GEMS @ MOLO @ TEWA @ PRIN
+-->  GEMS @ MOLO @ TEWA @ PRIN @ FOCO
+-->  GEMS @ MOLO @ TEWA @ PRIN @ FOCO @ MECR
+-->  GEMS @ MOLO @ TEWA @ PRIN @ FOCO @ MECR @ MEKI
+-->  GEMS @ MOLO @ TEWA @ PRIN @ FOCO @ MECR @ MEKI @ FOEV
+-->  GEMS @ MOLO @ TEWA @ PRIN @ FOCO @ MECR @ MEKI @ FOEV @ PLAS
+     0001   0002   0003   0004   0005   0006   0007   0007   0008  
+
+------------------------------------------------------------------
+PRIMARIO
+------------------------------------------------------------------
+
+
++GEMS
+001GEMS0000########F*********
+
++MOLO
+002GEMS0000MOLO0001F*********
+
++TEWA
+001GEMS0000########F*********
+001TEWA0003########F*********
+001MOLO0001########N000001***
+
++PRIN
+001GEMS0000########F*********
+001TEWA0002PRIN0003F*********
+001MOLO0001########N000001***
+
++FOCO
+001FOCO0004GEMS0000F*********
+001TEWA0002PRIN0003F*********
+001MOLO0001########N000001***
+
++MECR
