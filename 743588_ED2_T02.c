@@ -449,13 +449,14 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 
 	// Coloca a entrada no ARQUIVO de dados
 	strcat(ARQUIVO, entrada);
+	printf("ARQUIVO: %s\n", ARQUIVO);  //!
 
 	inserir_registro_indices(iprimary, ibrand, novo);
 	nregistros++;
 
-	printf("nregistros: %d\n", nregistros);
-	printf("nregistrosip: %d\n", nregistrosip);
-	printf("nregistrosis: %d\n", nregistrosis);
+	printf("nregistros: %d\n", nregistros);  //!
+	printf("nregistrosip: %d\n", nregistrosip);  //!
+	printf("nregistrosis: %d\n", nregistrosis);  //!
 
 
 }
@@ -486,7 +487,7 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 			imprimir_node_ip(atual);
 			
 			if (atual->num_chaves == ordem_ip-1) {
-				printf("no cheio!\n");
+				printf("no cheio!\n");	//!
 				return;
 			}
 
@@ -497,7 +498,7 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 			atual->num_chaves++;
 			strcpy(atual->chave[i].pk, P.pk);
 			atual->chave[i].rrn = rrn;
-			write_btree_ip(atual, rrn);
+			write_btree_ip(atual, iprimary->raiz);
 
 		}
 
@@ -549,11 +550,12 @@ void teste() {
 
 }
 
-// Concatena o registro de um nó no Arquivo de Índices Primários
+// Sobrescreve o registro de um nó na posição do RRN do Arquivo de Índices Primários
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
+	char *r = ARQUIVO_IP + rrn*tamanho_registro_ip;
 	char registroIp[tamanho_registro_ip+1];		/* String para armazenar o novo registro */
-	memset(registroIp, 0, sizeof(registroIp));
+	memset(registroIp, 0, sizeof(registroIp));	// "Zera" a string
 
 	char nChaves[4];
 	char chavePrimaria[TAM_PRIMARY_KEY];
@@ -563,6 +565,7 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 	// 3 bytes para o NÚMERO DE CHAVES 
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
+	printf("nChaves: %s\n", nChaves);	//!
 	strcat(registroIp, nChaves);
 
 	// 10 bytes da CHAVE PRIMÁRIA
@@ -574,6 +577,9 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 			sprintf(chavePrimaria, "##########");
 			sprintf(RRN, "####");
 		}
+		printf("chavePrimaria[%d]: %s\n", i, chavePrimaria);	//!
+		printf("RRN[%d]: %s\n", i, RRN);	//!
+
 		strcat(registroIp, chavePrimaria);
 		strcat(registroIp, RRN);
 	}
@@ -594,8 +600,10 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 		strcat(registroIp, descendente);
 	}
 
+	printf("ARQUIVO_IP (ANTES): %s\n", ARQUIVO_IP);	//!
 	/* Coloca no ARQUIVO PRIMÁRIO */
-	strcat(ARQUIVO_IP, registroIp);
+	strncpy(r, registroIp, tamanho_registro_ip);
+	printf("ARQUIVO_IP (DEPOIS): %s\n", ARQUIVO_IP);	//!
 
 }
 
@@ -640,11 +648,18 @@ node_Btree_ip *read_btree_ip(int rrn) {
 		char RRN[5];							RRN[0] = '\0';
 
 		strncat(chavePrimaria, r, 10);
-		if (strcmp(chavePrimaria, "##########"))
+		printf("chavePrimaria[%d]: %s\n", n, chavePrimaria);	//!
+		if (strcmp(chavePrimaria, "##########") != 0)
 			strcpy(recuperar->chave[n].pk, chavePrimaria);
+		printf("recuperar->chave[%d].pk: %s\n", n, recuperar->chave[n].pk);	//!
 		r += 10;
 		strncat(RRN, r, 4);
-		recuperar->chave[i].rrn = atoi(RRN);
+		printf("RRN[%d]: %s\n", n, RRN);	//!
+		if (strcmp(RRN, "####") != 0)
+			recuperar->chave[n].rrn = atoi(RRN);
+		else
+			recuperar->chave[n].rrn = -1;
+		printf("recuperar->chave[%d].rrn: %d\n", n, recuperar->chave[n].rrn);	//!
 		r += 4;
 
 	}
