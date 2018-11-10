@@ -549,6 +549,7 @@ void teste() {
 
 }
 
+// Concatena o registro de um nó no Arquivo de Índices Primários
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 	char registroIp[tamanho_registro_ip+1];		/* String para armazenar o novo registro */
