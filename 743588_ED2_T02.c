@@ -408,6 +408,25 @@ void criar_ibrand(Indice *ibrand) { //todo
 
 
 /* =====================================================================================
+   ========================== FUNÇÕES DE COMPARAÇÃO ====================================
+   ===================================================================================== */
+
+int comparacao_Ip(const void *a, const void *b) {
+
+	Chave_ip A = *(Chave_ip*)a;
+	Chave_ip B = *(Chave_ip*)b;
+
+	if (strcmp(A.pk, B.pk) == 0)
+		return 0;
+	else if (strcmp(A.pk, B.pk) > 0)
+		return 1;
+	else
+		return -1;
+
+}
+
+
+/* =====================================================================================
    ======================== INTERAÇÃO COM O USUÁRIO ====================================
    ===================================================================================== */
 
@@ -495,11 +514,16 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 			while (i < atual->num_chaves)
 				i++;
 			
+			// Insere na posição correta
 			atual->num_chaves++;
 			strcpy(atual->chave[i].pk, P.pk);
 			atual->chave[i].rrn = rrn;
-			write_btree_ip(atual, iprimary->raiz);
 
+			// Ordena o vetor de chaves
+			qsort(atual->chave, atual->num_chaves, sizeof(Chave_ip), comparacao_Ip);
+
+			// Escreve no ARQUIVO_IP
+			write_btree_ip(atual, iprimary->raiz);
 		}
 
 
