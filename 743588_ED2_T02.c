@@ -175,6 +175,8 @@ node_Btree_is *criar_no_is();
 // Libera todos os campos dinâmicos do nó, inclusive ele mesmo
 void libera_no(void *node, char ip);
 
+// Buscar na árvore
+int buscar_btree(Indice *ip, char *chave);
 
 
 /*
@@ -536,11 +538,21 @@ void write_btree(void *salvar, int rrn, char ip) {
 
 }
 
+//!DELETAR
+void teste() {
+
+	char nome[10] = {"Pietro"};
+	printf("nome (ANTES): %s\n", nome);
+
+	memset(nome, 0, sizeof(nome));	//Zera uma string
+	printf("nome (DEPOIS): %s\n", nome);	
+
+}
+
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 	char registroIp[tamanho_registro_ip+1];		/* String para armazenar o novo registro */
-	registroIp[tamanho_registro_ip] = '\0';
-	registroIp[0] = '\0';
+	memset(registroIp, 0, sizeof(registroIp));
 
 	char nChaves[4];
 	char chavePrimaria[TAM_PRIMARY_KEY];
@@ -699,101 +711,40 @@ node_Btree_is *criar_no_is() {
 }
 
 
+int buscar_btree_privado(int rrn, char *chave) {
 
+	node_Btree_ip *atual = read_btree_ip(rrn);
+	if (atual->folha = 'F')
+		return -1;
+
+	int i;
+	for (i = 0; i < atual->num_chaves; i++) {
+		if (strcmp(atual->chave[i].pk, chave) == 0)
+			return rrn;
+		buscar_btree_privado(atual->desc[i], chave);
+	}
+	buscar_btree_privado(atual->desc[i], chave);
+
+
+}
+int buscar_btree(Indice *ip, char *chave) {
+	return buscar_btree_privado(ip->raiz, chave);
+}
 
 
 
 
 /* PSEUDOCÓDIGOS -> CÓDIGO ÁRVORE B */
 
-typedef struct prom_dir {
-	char chavePromovida[TAM_PRIMARY_KEY];
-	node_Btree_ip *filhoDireito;
-} PromDir;
+void b_tree_insert(Indice *ip, char *k, int rrn) {
 
-
-PromDir divide_no(int rrnNo, char *chave, int rrnDireito) {
-
-
-
-}
-
-PromDir insere_aux(int rrnNo, char *chave) {
-
-	int i;
-	node_Btree_ip *X = read_btree_ip(rrnNo);
-	
-	if (X->folha == 'F') {
-		if (X->num_chaves < ordem_ip-1) {
-			i = X->num_chaves;
-			while (i >= 0 && strcmp(chave, X->chave[i].pk) < 0) {
-				strcpy(X->chave[i+1].pk, X->chave[i].pk);
-				i--;
-			}
-			strcpy(X->chave[i+1].pk, chave);
-			X->num_chaves++;
-
-			PromDir r;
-			r.filhoDireito = NULL;
-			return r;
-		}
-		else {
-			return divide_no(rrnNo, chave, -1);
-		} 	
-	}
-	else {
-		i = X->num_chaves;
-		while (i >= 0 && strcmp(chave, X->chave[i].pk) < 0)
-			i--;
-		i++;
-
-		PromDir atual = insere_aux(X->desc[i], chave);
-
-		if (strlen(atual.chavePromovida)) {
-			strcpy(chave, atual.chavePromovida);
-			if (X->num_chaves < ordem_ip-1) {
-				i = X->num_chaves;
-				while (i >= 0 && strcmp(chave, X->chave[i].pk) < 0) {
-					strcpy(X->chave[i+1].pk, X->chave[i].pk);
-					X->desc[i+2] = X->desc[i+1];
-					i--;
-				}
-				strcpy(X->chave[i+1].pk, chave);
-				// X->desc[i+2] = atual.filhoDireito;  //?
-				X->num_chaves = 
-			}
-		}
-	}
-
-
-}
-
-
-void insere(Indice *ip, char *chave, int rrn) {
-
-	if (ip->raiz == -1) {
-		node_Btree_ip *X = criar_no_ip();
-		X->folha = 'F';
-		X->num_chaves = 1;
-		strcpy(X->chave[0].pk, chave);
-		
+	node_Btree_ip *r = read_btree_ip(ip->raiz);
+	if (r->num_chaves == ordem_ip-1) {
+		node_Btree_ip *s = criar_no_ip();
 		ip->raiz = rrn;
+		s->folha = 'N';
+		s->num_chaves = 0;
+		// s->desc[0] = 
 	}
-	else {
-		PromDir atual = insere_aux(ip->raiz, chave);
-
-		if (strlen(atual.chavePromovida)) {
-			node_Btree_ip *X = criar_no_ip();
-			X->folha = 'N';
-			X->num_chaves = 1;
-			strcpy(X->chave[0].pk, atual.chavePromovida);
-			
-			X->desc[0] = ip->raiz;
-			// X->desc[1] = atual.filhoDireito->chave[0].rrn;  //?
-			
-			ip->raiz = rrn;
-		}
-	}
-
 
 }
