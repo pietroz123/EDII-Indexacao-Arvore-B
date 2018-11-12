@@ -965,6 +965,7 @@ void insere(Indice *ip, char *k, int rrn) {
 			X->folha = 'N';
 			X->num_chaves = 1;
 			strcpy(X->chave[0].pk, atual.chavePromovida);
+			X->chave[0].rrn = nregistros;
 			
 			X->desc[0] = ip->raiz;
 			X->desc[1] = atual.filhoDireito->chave[0].rrn;  //? f2[X] <-- filho_direito
