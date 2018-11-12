@@ -951,9 +951,11 @@ void insere(Indice *ip, char *k, int rrn) {
 		X->folha = 'F';
 		X->num_chaves = 1;
 		strcpy(X->chave[0].pk, k);
+		X->chave[0].rrn = nregistros;
 		
 		ip->raiz = 0;	//?	raiz[T] <-- X
 		write_btree_ip(X, ip->raiz);
+		nregistrosip++;
 	}
 	else {
 		PromDir atual = insere_aux(ip->raiz, k);
