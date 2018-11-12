@@ -92,6 +92,12 @@ typedef struct indice {
 	int raiz;
 } Indice;
 
+// Struct para as funções de inserção
+typedef struct prom_dir {
+	char chavePromovida[TAM_PRIMARY_KEY];
+	node_Btree_ip *filhoDireito;  //? é o nó ou o RRN do nó no ARQUIVO_IP
+} PromDir;
+
 /* Variáveis globais */
 char ARQUIVO[MAX_REGISTROS * TAM_REGISTRO + 1];
 char ARQUIVO_IP[2000 * sizeof(Chave_ip)];
@@ -175,6 +181,13 @@ node_Btree_is *criar_no_is();
 // Libera todos os campos dinâmicos do nó, inclusive ele mesmo
 void libera_no(void *node, char ip);
 
+// Buscar na árvore
+int buscar_btree(Indice ip, char *chave);
+
+// Funções de inserção
+void insere(Indice *ip, char *k, int rrn);
+PromDir insere_aux(int rrnNo, char *k);
+PromDir divide_no(int rrnNo, char *k, int rrnDireito);
 
 
 /*
@@ -206,6 +219,9 @@ int main()
 
 	tamanho_registro_ip = ordem_ip * 3 + 4 + (-1 + ordem_ip) * 14;
 	tamanho_registro_is = ordem_is * 3 + 4 + (-1 + ordem_is) * (TAM_STRING_INDICE + 9);
+
+
+	char chave[TAM_PRIMARY_KEY];
 
 
 	/* Índice primário */
@@ -278,6 +294,14 @@ int main()
 		
 		case 8: /* Libera toda memória alocada dinâmicamente (se ainda houver) e encerra */
 			return 0;
+
+		case 9:
+			scanf("%[^\n]s", chave);
+			if (buscar_btree(iprimary, chave) != -1)
+				printf("ACHOU\n");
+			else	
+				printf("NAO ACHOU\n");
+			break;
 		
 		default: /* exibe mensagem de erro */
 			printf(OPCAO_INVALIDA);
@@ -406,6 +430,25 @@ void criar_ibrand(Indice *ibrand) { //todo
 
 
 /* =====================================================================================
+   ========================== FUNÇÕES DE COMPARAÇÃO ====================================
+   ===================================================================================== */
+
+int comparacao_Ip(const void *a, const void *b) {
+
+	Chave_ip A = *(Chave_ip*)a;
+	Chave_ip B = *(Chave_ip*)b;
+
+	if (strcmp(A.pk, B.pk) == 0)
+		return 0;
+	else if (strcmp(A.pk, B.pk) > 0)
+		return 1;
+	else
+		return -1;
+
+}
+
+
+/* =====================================================================================
    ======================== INTERAÇÃO COM O USUÁRIO ====================================
    ===================================================================================== */
 
@@ -447,13 +490,15 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 
 	// Coloca a entrada no ARQUIVO de dados
 	strcat(ARQUIVO, entrada);
+	// printf("ARQUIVO: %s\n", ARQUIVO);  //!
 
-	inserir_registro_indices(iprimary, ibrand, novo);
+	// inserir_registro_indices(iprimary, ibrand, novo);
+	insere(iprimary, novo.pk, nregistrosip);
 	nregistros++;
 
-	printf("nregistros: %d\n", nregistros);
-	printf("nregistrosip: %d\n", nregistrosip);
-	printf("nregistrosis: %d\n", nregistrosis);
+	printf("nregistros: %d\n", nregistros);  //!
+	printf("nregistrosip: %d\n", nregistrosip);  //!
+	printf("nregistrosis: %d\n", nregistrosis);  //!
 
 
 }
@@ -484,7 +529,7 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 			imprimir_node_ip(atual);
 			
 			if (atual->num_chaves == ordem_ip-1) {
-				printf("no cheio!\n");
+				printf("no cheio!\n");	//!
 				return;
 			}
 
@@ -492,11 +537,16 @@ void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 			while (i < atual->num_chaves)
 				i++;
 			
+			// Insere na posição correta
 			atual->num_chaves++;
 			strcpy(atual->chave[i].pk, P.pk);
 			atual->chave[i].rrn = rrn;
-			write_btree_ip(atual, rrn);
 
+			// Ordena o vetor de chaves
+			qsort(atual->chave, atual->num_chaves, sizeof(Chave_ip), comparacao_Ip);
+
+			// Escreve no ARQUIVO_IP
+			write_btree_ip(atual, iprimary->raiz);
 		}
 
 
@@ -536,11 +586,23 @@ void write_btree(void *salvar, int rrn, char ip) {
 
 }
 
+//!DELETAR
+void teste() {
+
+	char nome[10] = {"Pietro"};
+	printf("nome (ANTES): %s\n", nome);
+
+	memset(nome, 0, sizeof(nome));	//Zera uma string
+	printf("nome (DEPOIS): %s\n", nome);	
+
+}
+
+// Sobrescreve o registro de um nó na posição do RRN do Arquivo de Índices Primários
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
+	char *r = ARQUIVO_IP + rrn*tamanho_registro_ip;
 	char registroIp[tamanho_registro_ip+1];		/* String para armazenar o novo registro */
-	registroIp[tamanho_registro_ip] = '\0';
-	registroIp[0] = '\0';
+	memset(registroIp, 0, sizeof(registroIp));	// "Zera" a string
 
 	char nChaves[4];
 	char chavePrimaria[TAM_PRIMARY_KEY];
@@ -550,6 +612,7 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 	// 3 bytes para o NÚMERO DE CHAVES 
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
+	// printf("nChaves: %s\n", nChaves);	//!
 	strcat(registroIp, nChaves);
 
 	// 10 bytes da CHAVE PRIMÁRIA
@@ -561,6 +624,9 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 			sprintf(chavePrimaria, "##########");
 			sprintf(RRN, "####");
 		}
+		// printf("chavePrimaria[%d]: %s\n", i, chavePrimaria);	//!
+		// printf("RRN[%d]: %s\n", i, RRN);	//!
+
 		strcat(registroIp, chavePrimaria);
 		strcat(registroIp, RRN);
 	}
@@ -581,8 +647,10 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 		strcat(registroIp, descendente);
 	}
 
+	// printf("ARQUIVO_IP (ANTES): %s\n", ARQUIVO_IP);	//!
 	/* Coloca no ARQUIVO PRIMÁRIO */
-	strcat(ARQUIVO_IP, registroIp);
+	strncpy(r, registroIp, tamanho_registro_ip);
+	// printf("ARQUIVO_IP (DEPOIS): %s\n", ARQUIVO_IP);	//!
 
 }
 
@@ -627,11 +695,18 @@ node_Btree_ip *read_btree_ip(int rrn) {
 		char RRN[5];							RRN[0] = '\0';
 
 		strncat(chavePrimaria, r, 10);
-		if (strcmp(chavePrimaria, "##########"))
+		// printf("chavePrimaria[%d]: %s\n", n, chavePrimaria);	//!
+		if (strcmp(chavePrimaria, "##########") != 0)
 			strcpy(recuperar->chave[n].pk, chavePrimaria);
+		// printf("recuperar->chave[%d].pk: %s\n", n, recuperar->chave[n].pk);	//!
 		r += 10;
 		strncat(RRN, r, 4);
-		recuperar->chave[i].rrn = atoi(RRN);
+		// printf("RRN[%d]: %s\n", n, RRN);	//!
+		if (strcmp(RRN, "####") != 0)
+			recuperar->chave[n].rrn = atoi(RRN);
+		else
+			recuperar->chave[n].rrn = -1;
+		// printf("recuperar->chave[%d].rrn: %d\n", n, recuperar->chave[n].rrn);	//!
 		r += 4;
 
 	}
@@ -742,11 +817,6 @@ int buscar_btree(Indice ip, char *chave) {
 
 //!!!!!!!!!!!!!!!!!!!!!
 //? ONDE eu utilizo os write_btree e COMO utilizar?
-
-typedef struct prom_dir {
-	char chavePromovida[TAM_PRIMARY_KEY];
-	node_Btree_ip *filhoDireito;  //? é o nó ou o RRN do nó no ARQUIVO_IP
-} PromDir;
 
 
 PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
@@ -882,7 +952,8 @@ void insere(Indice *ip, char *k, int rrn) {
 		X->num_chaves = 1;
 		strcpy(X->chave[0].pk, k);
 		
-		ip->raiz = rrn;	//?	raiz[T] <-- X
+		ip->raiz = 0;	//?	raiz[T] <-- X
+		write_btree_ip(X, ip->raiz);
 	}
 	else {
 		PromDir atual = insere_aux(ip->raiz, k);
