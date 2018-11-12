@@ -176,7 +176,7 @@ node_Btree_is *criar_no_is();
 void libera_no(void *node, char ip);
 
 // Buscar na árvore
-int buscar_btree(Indice *ip, char *chave);
+int buscar_btree(Indice ip, char *chave);
 
 
 /*
@@ -208,6 +208,9 @@ int main()
 
 	tamanho_registro_ip = ordem_ip * 3 + 4 + (-1 + ordem_ip) * 14;
 	tamanho_registro_is = ordem_is * 3 + 4 + (-1 + ordem_is) * (TAM_STRING_INDICE + 9);
+
+
+	char chave[TAM_PRIMARY_KEY];
 
 
 	/* Índice primário */
@@ -280,6 +283,14 @@ int main()
 		
 		case 8: /* Libera toda memória alocada dinâmicamente (se ainda houver) e encerra */
 			return 0;
+
+		case 9:
+			scanf("%[^\n]s", chave);
+			if (buscar_btree(iprimary, chave) != -1)
+				printf("ACHOU\n");
+			else	
+				printf("NAO ACHOU\n");
+			break;
 		
 		default: /* exibe mensagem de erro */
 			printf(OPCAO_INVALIDA);
@@ -468,7 +479,7 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 
 	// Coloca a entrada no ARQUIVO de dados
 	strcat(ARQUIVO, entrada);
-	printf("ARQUIVO: %s\n", ARQUIVO);  //!
+	// printf("ARQUIVO: %s\n", ARQUIVO);  //!
 
 	inserir_registro_indices(iprimary, ibrand, novo);
 	nregistros++;
@@ -589,7 +600,7 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 	// 3 bytes para o NÚMERO DE CHAVES 
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
-	printf("nChaves: %s\n", nChaves);	//!
+	// printf("nChaves: %s\n", nChaves);	//!
 	strcat(registroIp, nChaves);
 
 	// 10 bytes da CHAVE PRIMÁRIA
@@ -601,8 +612,8 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 			sprintf(chavePrimaria, "##########");
 			sprintf(RRN, "####");
 		}
-		printf("chavePrimaria[%d]: %s\n", i, chavePrimaria);	//!
-		printf("RRN[%d]: %s\n", i, RRN);	//!
+		// printf("chavePrimaria[%d]: %s\n", i, chavePrimaria);	//!
+		// printf("RRN[%d]: %s\n", i, RRN);	//!
 
 		strcat(registroIp, chavePrimaria);
 		strcat(registroIp, RRN);
@@ -624,10 +635,10 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 		strcat(registroIp, descendente);
 	}
 
-	printf("ARQUIVO_IP (ANTES): %s\n", ARQUIVO_IP);	//!
+	// printf("ARQUIVO_IP (ANTES): %s\n", ARQUIVO_IP);	//!
 	/* Coloca no ARQUIVO PRIMÁRIO */
 	strncpy(r, registroIp, tamanho_registro_ip);
-	printf("ARQUIVO_IP (DEPOIS): %s\n", ARQUIVO_IP);	//!
+	// printf("ARQUIVO_IP (DEPOIS): %s\n", ARQUIVO_IP);	//!
 
 }
 
@@ -672,18 +683,18 @@ node_Btree_ip *read_btree_ip(int rrn) {
 		char RRN[5];							RRN[0] = '\0';
 
 		strncat(chavePrimaria, r, 10);
-		printf("chavePrimaria[%d]: %s\n", n, chavePrimaria);	//!
+		// printf("chavePrimaria[%d]: %s\n", n, chavePrimaria);	//!
 		if (strcmp(chavePrimaria, "##########") != 0)
 			strcpy(recuperar->chave[n].pk, chavePrimaria);
-		printf("recuperar->chave[%d].pk: %s\n", n, recuperar->chave[n].pk);	//!
+		// printf("recuperar->chave[%d].pk: %s\n", n, recuperar->chave[n].pk);	//!
 		r += 10;
 		strncat(RRN, r, 4);
-		printf("RRN[%d]: %s\n", n, RRN);	//!
+		// printf("RRN[%d]: %s\n", n, RRN);	//!
 		if (strcmp(RRN, "####") != 0)
 			recuperar->chave[n].rrn = atoi(RRN);
 		else
 			recuperar->chave[n].rrn = -1;
-		printf("recuperar->chave[%d].rrn: %d\n", n, recuperar->chave[n].rrn);	//!
+		// printf("recuperar->chave[%d].rrn: %d\n", n, recuperar->chave[n].rrn);	//!
 		r += 4;
 
 	}
@@ -751,24 +762,43 @@ node_Btree_is *criar_no_is() {
 }
 
 
+// int buscar_btree_privado(int rrn, char *chave) {
+
+// 	node_Btree_ip *atual = read_btree_ip(rrn);
+// 	if (atual->folha = 'F')
+// 		return -1;
+
+// 	int i;
+// 	for (i = 0; i < atual->num_chaves; i++) {
+// 		if (strcmp(atual->chave[i].pk, chave) == 0)
+// 			return rrn;
+// 		buscar_btree_privado(atual->desc[i], chave);
+// 	}
+// 	buscar_btree_privado(atual->desc[i], chave);
+
+
+// }
 int buscar_btree_privado(int rrn, char *chave) {
 
 	node_Btree_ip *atual = read_btree_ip(rrn);
-	if (atual->folha = 'F')
-		return -1;
 
-	int i;
-	for (i = 0; i < atual->num_chaves; i++) {
-		if (strcmp(atual->chave[i].pk, chave) == 0)
-			return rrn;
-		buscar_btree_privado(atual->desc[i], chave);
+	int i = 0;
+	while (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) > 0) {
+		i++;
 	}
-	buscar_btree_privado(atual->desc[i], chave);
+
+	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) == 0)
+		return rrn;
+
+	if (atual->folha == 'F')
+		return -1;
+	else 
+		return buscar_btree_privado(atual->desc[i], chave);
 
 
 }
-int buscar_btree(Indice *ip, char *chave) {
-	return buscar_btree_privado(ip->raiz, chave);
+int buscar_btree(Indice ip, char *chave) {
+	return buscar_btree_privado(ip.raiz, chave);
 }
 
 
@@ -776,15 +806,3 @@ int buscar_btree(Indice *ip, char *chave) {
 
 /* PSEUDOCÓDIGOS -> CÓDIGO ÁRVORE B */
 
-void b_tree_insert(Indice *ip, char *k, int rrn) {
-
-	node_Btree_ip *r = read_btree_ip(ip->raiz);
-	if (r->num_chaves == ordem_ip-1) {
-		node_Btree_ip *s = criar_no_ip();
-		ip->raiz = rrn;
-		s->folha = 'N';
-		s->num_chaves = 0;
-		// s->desc[0] = 
-	}
-
-}

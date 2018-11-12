@@ -701,67 +701,172 @@ node_Btree_is *criar_no_is() {
 
 
 
-
-
-
 /* PSEUDOCÓDIGOS -> CÓDIGO ÁRVORE B */
 
-typedef struct prom_dir {
-	char chavePromovida[TAM_PRIMARY_KEY];
-	node_Btree_ip *filhoDireito;
-} PromDir;
+
+/* ==========================================
+   ================ BUSCA ===================
+   ========================================== */
 
 
-PromDir divide_no(int rrnNo, char *chave, int rrnDireito) {
+int buscar_btree_privado(int rrn, char *chave) {
 
+	node_Btree_ip *atual = read_btree_ip(rrn);
+	imprimir_node_ip(atual);
+
+	int i = 0;
+	while (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) > 0) {
+		printf("chave atual: %s\n", atual->chave[i].pk);
+		i++;
+	}
+
+	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) == 0)
+		return rrn;
+
+	if (atual->folha == 'F')
+		return -1;
+	else 
+		return buscar_btree_privado(atual->desc[i], chave);
 
 
 }
+int buscar_btree(Indice ip, char *chave) {
+	return buscar_btree_privado(ip.raiz, chave);
+}
 
-PromDir insere_aux(int rrnNo, char *chave) {
+
+/* ==========================================
+   =============== INSERÇÃO =================
+   ========================================== */
+
+
+//!!!!!!!!!!!!!!!!!!!!!
+//? ONDE eu utilizo os write_btree e COMO utilizar?
+
+typedef struct prom_dir {
+	char chavePromovida[TAM_PRIMARY_KEY];
+	node_Btree_ip *filhoDireito;  //? é o nó ou o RRN do nó no ARQUIVO_IP
+} PromDir;
+
+
+PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
+
+	node_Btree_ip *X = read_btree_ip(rrnNo);
+	node_Btree_ip *filho_direito = read_btree_ip(rrnDireito);
+
+	int i = X->num_chaves;
+	int chave_alocada = 0;
+
+	// Criação do novo nó
+	node_Btree_ip *Y = criar_no_ip();
+	Y->folha = X->folha;
+	Y->num_chaves = (ordem_ip-1) / 2;
+
+	// Movimentação de metade das chaves de X para Y
+	for (int j = Y->num_chaves-1; j >= 0; j--) {
+		if (!chave_alocada && strcmp(k, X->chave[i].pk) > 0) {
+			strcpy(Y->chave[j].pk, k);
+			Y->desc[j+1] = rrnDireito;
+			chave_alocada = 1; 
+		}
+		else {
+			strcpy(Y->chave[j].pk, X->chave[i].pk);
+			Y->desc[j+1] = X->desc[i+1];
+			i--;
+		}
+	}
+
+	// k é menor que as demais chaves. X deve ser manipulado para abrir espaço para a nova chave
+	if (!chave_alocada) {
+		while (i >= 0 && strcmp(k, X->chave[i].pk) < 0) {
+			strcpy(X->chave[i+1].pk, X->chave[i].pk);
+			X->desc[i+2] = X->desc[i+1];
+			i--;
+		}
+		strcpy(X->chave[i+1].pk, k);
+		X->desc[i+2] = rrnDireito;
+	}
+
+	char chave_promovida[TAM_PRIMARY_KEY];
+	strcpy(chave_promovida, X->chave[(ordem_ip/2)+1].pk);	// Promove a chave mediana
+	Y->desc[0] = X->desc[(ordem_ip/2)+2];					
+	X->num_chaves = (ordem_ip / 2);							// O número de chaves é reduzido pela metade
+
+	PromDir retorno;
+	strcpy(retorno.chavePromovida, chave_promovida);
+	retorno.filhoDireito = Y;
+	return retorno;
+}
+
+PromDir insere_aux(int rrnNo, char *k) {
 
 	int i;
 	node_Btree_ip *X = read_btree_ip(rrnNo);
 	
+	// X é folha
 	if (X->folha == 'F') {
+		// Verificamos se há espaço para inserir a chave em X
 		if (X->num_chaves < ordem_ip-1) {
-			i = X->num_chaves;
-			while (i >= 0 && strcmp(chave, X->chave[i].pk) < 0) {
+			// Há espaço para inserção, procuramos onde inserir
+			i = X->num_chaves-1;
+
+			while (i >= 0 && strcmp(k, X->chave[i].pk) < 0) {
 				strcpy(X->chave[i+1].pk, X->chave[i].pk);
 				i--;
 			}
-			strcpy(X->chave[i+1].pk, chave);
+			strcpy(X->chave[i+1].pk, k);
 			X->num_chaves++;
 
-			PromDir r;
-			r.filhoDireito = NULL;
-			return r;
+			/* Exemplo do código acima */
+			// +C em A B D -1:
+			// A B D D
+			// A B C D
+
+			// PromDir r;  //?
+			// r.chavePromovida = NULL;  //?
+			// r.filhoDireito = NULL;  //?
+			// return r; // return NULL, NULL  //?Como retornar NULL, NULL?
 		}
 		else {
-			return divide_no(rrnNo, chave, -1);
+			// Não há espaço, portanto realizamos um split
+			return divide_no(rrnNo, k, -1);  //? return divide_no(X, k, NULL)
 		} 	
 	}
+	// X não é folha
 	else {
-		i = X->num_chaves;
-		while (i >= 0 && strcmp(chave, X->chave[i].pk) < 0)
+		i = X->num_chaves-1;
+		while (i >= 0 && strcmp(k, X->chave[i].pk) < 0)
 			i--;
 		i++;
 
-		PromDir atual = insere_aux(X->desc[i], chave);
+		PromDir atual = insere_aux(X->desc[i], k);
 
-		if (strlen(atual.chavePromovida)) {
-			strcpy(chave, atual.chavePromovida);
+		if (strlen(atual.chavePromovida)) {	//? if (chave_promovida != NULL)
+			strcpy(k, atual.chavePromovida);
+			// Verificamos se há espaço para inserir a chave_promovida (agora em k) em X
 			if (X->num_chaves < ordem_ip-1) {
-				i = X->num_chaves;
-				while (i >= 0 && strcmp(chave, X->chave[i].pk) < 0) {
+				// Há espaço para inserção, procuramos onde inserir
+				i = X->num_chaves-1;
+
+				while (i >= 0 && strcmp(k, X->chave[i].pk) < 0) {
 					strcpy(X->chave[i+1].pk, X->chave[i].pk);
 					X->desc[i+2] = X->desc[i+1];
 					i--;
 				}
-				strcpy(X->chave[i+1].pk, chave);
-				// X->desc[i+2] = atual.filhoDireito;  //?
-				// X->num_chaves = 
+
+				strcpy(X->chave[i+1].pk, k);
+				// X->desc[i+2] = atual.filhoDireito;  //? fi+2[X] <-- filho_direito
+				// X->num_chaves = ????  //? n[X] <-- x[X] + 1
+
+				//? return NULL, NULL 
 			}
+			else {
+				// Não há espaço, portanto realizamos um split
+				// return divide_no(rrnNo, k, rrnDireito);  //? return divide_no(X, k, filho_direito)
+			}
+		}
+		else {
+			//? return NULL, NULL
 		}
 	}
 
@@ -769,29 +874,29 @@ PromDir insere_aux(int rrnNo, char *chave) {
 }
 
 
-void insere(Indice *ip, char *chave, int rrn) {
+void insere(Indice *ip, char *k, int rrn) {
 
 	if (ip->raiz == -1) {
 		node_Btree_ip *X = criar_no_ip();
 		X->folha = 'F';
 		X->num_chaves = 1;
-		strcpy(X->chave[0].pk, chave);
+		strcpy(X->chave[0].pk, k);
 		
-		ip->raiz = rrn;
+		ip->raiz = rrn;	//?	raiz[T] <-- X
 	}
 	else {
-		PromDir atual = insere_aux(ip->raiz, chave);
+		PromDir atual = insere_aux(ip->raiz, k);
 
-		if (strlen(atual.chavePromovida)) {
+		if (strlen(atual.chavePromovida)) {		//? if (chave_promovida != NULL)
 			node_Btree_ip *X = criar_no_ip();
 			X->folha = 'N';
 			X->num_chaves = 1;
 			strcpy(X->chave[0].pk, atual.chavePromovida);
 			
 			X->desc[0] = ip->raiz;
-			// X->desc[1] = atual.filhoDireito->chave[0].rrn;  //?
+			X->desc[1] = atual.filhoDireito->chave[0].rrn;  //? f2[X] <-- filho_direito
 			
-			ip->raiz = rrn;
+			ip->raiz = rrn;	 //? raiz[T] <-- X
 		}
 	}
 
