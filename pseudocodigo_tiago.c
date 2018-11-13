@@ -776,23 +776,25 @@ node_Btree_is *criar_no_is() {
 }
 
 
+
 void pre_order_privado(int rrn) {
+	// printf("rrnAtual: %d\n", rrn);
+	if (rrn == -1)
+		return;
 	node_Btree_ip *atual = read_btree_ip(rrn);
+	// imprimir_node_ip(atual);
 
 	int i;
 	for (i = 0; i < atual->num_chaves; i++) {
-		if (atual->folha != 'F')
-			pre_order_privado(atual->desc[i]);
 		printf("%s ", atual->chave[i].pk);
-	}
-
-	if (atual->folha != 'F')
 		pre_order_privado(atual->desc[i]);
+	}
+	pre_order_privado(atual->desc[i]);
+
 }
 void pre_order(Indice ip) {
 	pre_order_privado(ip.raiz);
 }
-
 
 
 /* PSEUDOCÓDIGOS -> CÓDIGO ÁRVORE B */
@@ -931,7 +933,7 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 	write_btree_ip(X, rrnNo);
 	write_btree_ip(Y, nregistrosip);
 	nregistrosip++;
-	
+
 	return retorno;
 }
 
