@@ -189,6 +189,9 @@ void insere(Indice *ip, char *k, int rrn);
 PromDir insere_aux(int rrnNo, char *k);
 PromDir divide_no(int rrnNo, char *k, int rrnDireito);
 
+// Imprimir
+void pre_order(Indice ip);
+
 
 /*
 *   Caro aluno,
@@ -295,6 +298,7 @@ int main()
 		case 8: /* Libera toda memória alocada dinâmicamente (se ainda houver) e encerra */
 			return 0;
 
+		//!DELETAR
 		case 9:
 			scanf("%[^\n]s", chave);
 			int resultadoBusca = buscar_btree(iprimary, chave);
@@ -304,6 +308,11 @@ int main()
 				printf("NAO ACHOU\n");
 			break;
 		
+		//!DELETAR
+		case 10:
+			pre_order(iprimary);
+			break;
+
 		default: /* exibe mensagem de erro */
 			printf(OPCAO_INVALIDA);
 			break;
@@ -775,6 +784,23 @@ node_Btree_is *criar_no_is() {
 }
 
 
+void pre_order_privado(int rrn) {
+	node_Btree_ip *atual = read_btree_ip(rrn);
+
+	int i;
+	for (i = 0; i < atual->num_chaves; i++) {
+		if (atual->folha != 'F')
+			pre_order_privado(atual->desc[i]);
+		printf("%s ", atual->chave[i].pk);
+	}
+
+	if (atual->folha != 'F')
+		pre_order_privado(atual->desc[i]);
+}
+void pre_order(Indice ip) {
+	pre_order_privado(ip.raiz);
+}
+
 
 
 /* PSEUDOCÓDIGOS -> CÓDIGO ÁRVORE B */
@@ -829,7 +855,12 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 
 	node_Btree_ip *X = read_btree_ip(rrnNo);
 	node_Btree_ip *filho_direito = read_btree_ip(rrnDireito);
+	printf("X:\n");
+	imprimir_node_ip(X);
+	printf("filho_direito:\n");
+	imprimir_node_ip(filho_direito);
 
+	
 	int i = X->num_chaves;
 	int chave_alocada = 0;
 
