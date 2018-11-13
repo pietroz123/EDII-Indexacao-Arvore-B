@@ -96,6 +96,7 @@ typedef struct indice {
 // Struct para as funções de inserção
 typedef struct prom_dir {
 	char chavePromovida[TAM_PRIMARY_KEY];
+	int rrnIp;
 	int filhoDireito;  //? é o nó ou o RRN do nó no ARQUIVO_IP
 } PromDir;
 
@@ -622,7 +623,6 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 	// 3 bytes para o NÚMERO DE CHAVES 
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
-	// printf("nChaves: %s\n", nChaves);	//!
 	strcat(registroIp, nChaves);
 
 	// 10 bytes da CHAVE PRIMÁRIA
@@ -634,8 +634,6 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 			sprintf(chavePrimaria, "##########");
 			sprintf(RRN, "####");
 		}
-		// printf("chavePrimaria[%d]: %s\n", i, chavePrimaria);	//!
-		// printf("RRN[%d]: %s\n", i, RRN);	//!
 
 		strcat(registroIp, chavePrimaria);
 		strcat(registroIp, RRN);
@@ -657,10 +655,8 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 		strcat(registroIp, descendente);
 	}
 
-	// printf("ARQUIVO_IP (ANTES): %s\n", ARQUIVO_IP);	//!
 	/* Coloca no ARQUIVO PRIMÁRIO */
 	strncpy(r, registroIp, tamanho_registro_ip);
-	// printf("ARQUIVO_IP (DEPOIS): %s\n", ARQUIVO_IP);	//!
 
 }
 
@@ -705,18 +701,14 @@ node_Btree_ip *read_btree_ip(int rrn) {
 		char RRN[5];							RRN[0] = '\0';
 
 		strncat(chavePrimaria, r, 10);
-		// printf("chavePrimaria[%d]: %s\n", n, chavePrimaria);	//!
 		if (strcmp(chavePrimaria, "##########") != 0)
 			strcpy(recuperar->chave[n].pk, chavePrimaria);
-		// printf("recuperar->chave[%d].pk: %s\n", n, recuperar->chave[n].pk);	//!
 		r += 10;
 		strncat(RRN, r, 4);
-		// printf("RRN[%d]: %s\n", n, RRN);	//!
 		if (strcmp(RRN, "####") != 0)
 			recuperar->chave[n].rrn = atoi(RRN);
 		else
 			recuperar->chave[n].rrn = -1;
-		// printf("recuperar->chave[%d].rrn: %d\n", n, recuperar->chave[n].rrn);	//!
 		r += 4;
 
 	}
@@ -915,7 +907,7 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 	imprimir_node_ip(Y);
 
 	char chave_promovida[TAM_PRIMARY_KEY];
-	strcpy(chave_promovida, X->chave[(ordem_ip/2)].pk);	// Promove a chave mediana
+	strcpy(chave_promovida, X->chave[(ordem_ip/2)].pk);		// Promove a chave mediana
 	Y->desc[0] = X->desc[(ordem_ip/2)+1];					
 	X->num_chaves = (ordem_ip / 2);							// O número de chaves é reduzido pela metade
 
@@ -929,6 +921,7 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 
 	PromDir retorno;
 	strcpy(retorno.chavePromovida, chave_promovida);
+	retorno.rrnIp = X->chave[(ordem_ip/2)].rrn;
 	retorno.filhoDireito = nregistrosip;
 
 	write_btree_ip(Y, nregistrosip);
@@ -1042,6 +1035,7 @@ void insere(Indice *ip, char *k, int rrn) {
 		printf("Primeira chamada do insere_aux em insere\n");
 		PromDir atual = insere_aux(ip->raiz, k);
 		printf("Voltou para insere()\n");
+		printf("Retorno:\n");
 		imprime_prom_dir(atual);
 
 		if (strlen(atual.chavePromovida)) {		//? if (chave_promovida != NULL)
@@ -1050,7 +1044,7 @@ void insere(Indice *ip, char *k, int rrn) {
 			X->folha = 'N';
 			X->num_chaves = 1;
 			strcpy(X->chave[0].pk, atual.chavePromovida);
-			X->chave[0].rrn = nregistros;
+			X->chave[0].rrn = atual.rrnIp;
 			
 			X->desc[0] = ip->raiz;
 			X->desc[1] = atual.filhoDireito;  //? f2[X] <-- filho_direito
