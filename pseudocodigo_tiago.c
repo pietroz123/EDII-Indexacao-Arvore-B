@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>
 
 /* Tamanho dos campos dos registros */
 #define TAM_PRIMARY_KEY 			11
@@ -506,10 +507,9 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	insere(iprimary, novo.pk, nregistrosip);
 	nregistros++;
 
-	printf("nregistros: %d\n", nregistros);  //!
-	printf("nregistrosip: %d\n", nregistrosip);  //!
-	printf("nregistrosis: %d\n", nregistrosis);  //!
-
+	printf("nregistros: %d\n", nregistros);  		//!
+	printf("nregistrosip: %d\n", nregistrosip);  	//!
+	printf("iprimary->raiz: %d\n", iprimary->raiz);	//!
 
 }
 void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
@@ -853,37 +853,54 @@ void imprime_prom_dir(PromDir atual) {
 
 PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 
+	printf("rrnNo: %d\nrrnDireito: %d\n", rrnNo, rrnDireito);
+	
 	node_Btree_ip *X = read_btree_ip(rrnNo);
-	node_Btree_ip *filho_direito = read_btree_ip(rrnDireito);
+	node_Btree_ip *filho_direito;
+	if (rrnDireito != -1)
+		filho_direito = read_btree_ip(rrnDireito);
+	else
+		filho_direito = criar_no_ip();
+	
 	printf("X:\n");
 	imprimir_node_ip(X);
 	printf("filho_direito:\n");
 	imprimir_node_ip(filho_direito);
 
 	
-	int i = X->num_chaves;
+	int i = X->num_chaves-1;
 	int chave_alocada = 0;
 
 	node_Btree_ip *Y = criar_no_ip();
 	Y->folha = X->folha;
-	Y->num_chaves = (ordem_ip-1) / 2;
+	Y->num_chaves = floor((ordem_ip-1) / 2);
+	printf("Criou Y:\n");
+	imprimir_node_ip(Y);
+
 
 	for (int j = Y->num_chaves-1; j >= 0; j--) {
 		if (!chave_alocada && strcmp(k, X->chave[i].pk) > 0) {
 			strcpy(Y->chave[j].pk, k);
+			Y->chave[j].rrn = nregistros;
 			Y->desc[j+1] = rrnDireito;
 			chave_alocada = 1; 
 		}
 		else {
-			strcpy(Y->chave[j].pk, X->chave[i].pk);
+			Y->chave[j] = X->chave[i];
 			Y->desc[j+1] = X->desc[i+1];
 			i--;
 		}
 	}
 
+	printf("Apos MOVIMENTACAO:\n");
+	printf("X:\n");
+	imprimir_node_ip(X);
+	printf("Y:\n");
+	imprimir_node_ip(Y);
+
 	if (!chave_alocada) {
 		while (i >= 0 && strcmp(k, X->chave[i].pk) < 0) {
-			strcpy(X->chave[i+1].pk, X->chave[i].pk);
+			X->chave[i+1] = X->chave[i];
 			X->desc[i+2] = X->desc[i+1];
 			i--;
 		}
@@ -891,16 +908,31 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 		X->desc[i+2] = rrnDireito;
 	}
 
+	printf("Apos LIBERACAO:\n");
+	printf("X:\n");
+	imprimir_node_ip(X);
+	printf("Y:\n");
+	imprimir_node_ip(Y);
+
 	char chave_promovida[TAM_PRIMARY_KEY];
-	strcpy(chave_promovida, X->chave[(ordem_ip/2)+1].pk);	// Promove a chave mediana
-	Y->desc[0] = X->desc[(ordem_ip/2)+2];					
+	strcpy(chave_promovida, X->chave[(ordem_ip/2)].pk);	// Promove a chave mediana
+	Y->desc[0] = X->desc[(ordem_ip/2)+1];					
 	X->num_chaves = (ordem_ip / 2);							// O número de chaves é reduzido pela metade
+
+
+	printf("Apos PROMOCAO:\n");
+	printf("X:\n");
+	imprimir_node_ip(X);
+	printf("Y:\n");
+	imprimir_node_ip(Y);
+
 
 	PromDir retorno;
 	strcpy(retorno.chavePromovida, chave_promovida);
-	retorno.filhoDireito = rrnNo;
+	retorno.filhoDireito = nregistrosip;
 
 	write_btree_ip(Y, nregistrosip);
+	nregistrosip++;
 	return retorno;
 }
 
@@ -991,6 +1023,8 @@ PromDir insere_aux(int rrnNo, char *k) {
 
 void insere(Indice *ip, char *k, int rrn) {
 
+	printf("------ Vai inserir '%s' ------\n", k);
+
 	if (ip->raiz == -1) {
 		printf("ip->raiz == -1\n");
 		node_Btree_ip *X = criar_no_ip();
@@ -1021,10 +1055,13 @@ void insere(Indice *ip, char *k, int rrn) {
 			X->desc[0] = ip->raiz;
 			X->desc[1] = atual.filhoDireito;  //? f2[X] <-- filho_direito
 			
-			ip->raiz = rrn;	 //? raiz[T] <-- X
+			ip->raiz = nregistrosip;	 //? raiz[T] <-- X
+			write_btree_ip(X, nregistrosip);
+		}
+		else {
+			printf("Nao ocorreu overflow\n");
 		}
 
-		printf("Nao ocorreu overflow\n");
 	}
 
 
