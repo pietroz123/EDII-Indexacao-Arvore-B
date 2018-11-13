@@ -923,9 +923,15 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 	strcpy(retorno.chavePromovida, chave_promovida);
 	retorno.rrnIp = X->chave[(ordem_ip/2)].rrn;
 	retorno.filhoDireito = nregistrosip;
+	
+	// Zera a posicao que contem a chave promovida
+	memset(X->chave[(ordem_ip/2)].pk, 0, sizeof(X->chave[(ordem_ip/2)].pk));
+	X->chave[(ordem_ip/2)].rrn = -1;
 
+	write_btree_ip(X, rrnNo);
 	write_btree_ip(Y, nregistrosip);
 	nregistrosip++;
+	
 	return retorno;
 }
 
