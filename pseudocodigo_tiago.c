@@ -95,7 +95,7 @@ typedef struct indice {
 // Struct para as funções de inserção
 typedef struct prom_dir {
 	char chavePromovida[TAM_PRIMARY_KEY];
-	node_Btree_ip *filhoDireito;  //? é o nó ou o RRN do nó no ARQUIVO_IP
+	int filhoDireito;  //? é o nó ou o RRN do nó no ARQUIVO_IP
 } PromDir;
 
 /* Variáveis globais */
@@ -297,8 +297,9 @@ int main()
 
 		case 9:
 			scanf("%[^\n]s", chave);
-			if (buscar_btree(iprimary, chave) != -1)
-				printf("ACHOU\n");
+			int resultadoBusca = buscar_btree(iprimary, chave);
+			if (resultadoBusca != -1)
+				printf("ACHOU: rrn=%d\n", resultadoBusca);
 			else	
 				printf("NAO ACHOU\n");
 			break;
@@ -818,6 +819,11 @@ int buscar_btree(Indice ip, char *chave) {
 //!!!!!!!!!!!!!!!!!!!!!
 //? ONDE eu utilizo os write_btree e COMO utilizar?
 
+void imprime_prom_dir(PromDir atual) {
+	printf("atual.chavePromovida: %s\n", atual.chavePromovida);
+	printf("atual.filhoDireito: %d\n", atual.filhoDireito);
+}
+
 
 PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 
@@ -827,12 +833,10 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 	int i = X->num_chaves;
 	int chave_alocada = 0;
 
-	// Criação do novo nó
 	node_Btree_ip *Y = criar_no_ip();
 	Y->folha = X->folha;
 	Y->num_chaves = (ordem_ip-1) / 2;
 
-	// Movimentação de metade das chaves de X para Y
 	for (int j = Y->num_chaves-1; j >= 0; j--) {
 		if (!chave_alocada && strcmp(k, X->chave[i].pk) > 0) {
 			strcpy(Y->chave[j].pk, k);
@@ -846,7 +850,6 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 		}
 	}
 
-	// k é menor que as demais chaves. X deve ser manipulado para abrir espaço para a nova chave
 	if (!chave_alocada) {
 		while (i >= 0 && strcmp(k, X->chave[i].pk) < 0) {
 			strcpy(X->chave[i+1].pk, X->chave[i].pk);
@@ -864,7 +867,9 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 
 	PromDir retorno;
 	strcpy(retorno.chavePromovida, chave_promovida);
-	retorno.filhoDireito = Y;
+	retorno.filhoDireito = rrnNo;
+
+	write_btree_ip(Y, nregistrosip);
 	return retorno;
 }
 
@@ -872,50 +877,53 @@ PromDir insere_aux(int rrnNo, char *k) {
 
 	int i;
 	node_Btree_ip *X = read_btree_ip(rrnNo);
+	imprimir_node_ip(X);
 	
-	// X é folha
 	if (X->folha == 'F') {
-		// Verificamos se há espaço para inserir a chave em X
+		printf("X eh folha\n");
 		if (X->num_chaves < ordem_ip-1) {
-			// Há espaço para inserção, procuramos onde inserir
+			printf("Existe espaco\n");
 			i = X->num_chaves-1;
 
 			while (i >= 0 && strcmp(k, X->chave[i].pk) < 0) {
-				strcpy(X->chave[i+1].pk, X->chave[i].pk);
+				X->chave[i+1] = X->chave[i];
 				i--;
 			}
 			strcpy(X->chave[i+1].pk, k);
+			X->chave[i+1].rrn = nregistros;
 			X->num_chaves++;
+			printf("Feita a alteracao em X\n");
+			imprimir_node_ip(X);
 
-			/* Exemplo do código acima */
-			// +C em A B D -1:
-			// A B D D
-			// A B C D
+			PromDir r;  //?
+			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));  //?
+			r.filhoDireito = -1;  //?
+			imprime_prom_dir(r);
 
-			// PromDir r;  //?
-			// r.chavePromovida = NULL;  //?
-			// r.filhoDireito = NULL;  //?
-			// return r; // return NULL, NULL  //?Como retornar NULL, NULL?
-		}
+			write_btree_ip(X, rrnNo);
+
+			return r; // return NULL, NULL  //?Como retornar NULL, NULL?
+		} 
 		else {
-			// Não há espaço, portanto realizamos um split
+			printf("Nao existe espaco. Vai dividir\n");
 			return divide_no(rrnNo, k, -1);  //? return divide_no(X, k, NULL)
 		} 	
 	}
-	// X não é folha
 	else {
+		printf("X nao eh folha\n");
 		i = X->num_chaves-1;
 		while (i >= 0 && strcmp(k, X->chave[i].pk) < 0)
 			i--;
 		i++;
 
+		printf("Vai chamar insere_aux\n");
 		PromDir atual = insere_aux(X->desc[i], k);
+		printf("Chamou insere_aux\n");
+		imprime_prom_dir(atual);
 
 		if (strlen(atual.chavePromovida)) {	//? if (chave_promovida != NULL)
 			strcpy(k, atual.chavePromovida);
-			// Verificamos se há espaço para inserir a chave_promovida (agora em k) em X
 			if (X->num_chaves < ordem_ip-1) {
-				// Há espaço para inserção, procuramos onde inserir
 				i = X->num_chaves-1;
 
 				while (i >= 0 && strcmp(k, X->chave[i].pk) < 0) {
@@ -925,18 +933,24 @@ PromDir insere_aux(int rrnNo, char *k) {
 				}
 
 				strcpy(X->chave[i+1].pk, k);
-				// X->desc[i+2] = atual.filhoDireito;  //? fi+2[X] <-- filho_direito
-				// X->num_chaves = ????  //? n[X] <-- x[X] + 1
+				X->desc[i+2] = atual.filhoDireito;  //? fi+2[X] <-- filho_direito
+				X->num_chaves++;  //? n[X] <-- x[X] + 1
 
-				//? return NULL, NULL 
+				PromDir r;  //?
+				memset(r.chavePromovida, 0, sizeof(r.chavePromovida));  //?
+				r.filhoDireito = -1;  //?
+				return r; // return NULL, NULL  //?Como retornar NULL, NULL?
 			}
 			else {
 				// Não há espaço, portanto realizamos um split
-				// return divide_no(rrnNo, k, rrnDireito);  //? return divide_no(X, k, filho_direito)
+				return divide_no(rrnNo, k, atual.filhoDireito);  //? return divide_no(X, k, filho_direito)
 			}
 		}
 		else {
-			//? return NULL, NULL
+			PromDir r;  //?
+			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));  //?
+			r.filhoDireito = -1;  //?
+			return r; // return NULL, NULL  //?Como retornar NULL, NULL?
 		}
 	}
 
@@ -947,6 +961,7 @@ PromDir insere_aux(int rrnNo, char *k) {
 void insere(Indice *ip, char *k, int rrn) {
 
 	if (ip->raiz == -1) {
+		printf("ip->raiz == -1\n");
 		node_Btree_ip *X = criar_no_ip();
 		X->folha = 'F';
 		X->num_chaves = 1;
@@ -958,9 +973,14 @@ void insere(Indice *ip, char *k, int rrn) {
 		nregistrosip++;
 	}
 	else {
+		printf("ip->raiz != -1\n");
+		printf("Primeira chamada do insere_aux em insere\n");
 		PromDir atual = insere_aux(ip->raiz, k);
+		printf("Voltou para insere()\n");
+		imprime_prom_dir(atual);
 
 		if (strlen(atual.chavePromovida)) {		//? if (chave_promovida != NULL)
+			printf("Ocorreu overflow na raiz. Vai criar uma nova\n");
 			node_Btree_ip *X = criar_no_ip();
 			X->folha = 'N';
 			X->num_chaves = 1;
@@ -968,10 +988,12 @@ void insere(Indice *ip, char *k, int rrn) {
 			X->chave[0].rrn = nregistros;
 			
 			X->desc[0] = ip->raiz;
-			X->desc[1] = atual.filhoDireito->chave[0].rrn;  //? f2[X] <-- filho_direito
+			X->desc[1] = atual.filhoDireito;  //? f2[X] <-- filho_direito
 			
 			ip->raiz = rrn;	 //? raiz[T] <-- X
 		}
+
+		printf("Nao ocorreu overflow\n");
 	}
 
 
