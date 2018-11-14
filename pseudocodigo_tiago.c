@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <math.h>
 
 /* Tamanho dos campos dos registros */
 #define TAM_PRIMARY_KEY 			11
@@ -525,54 +524,7 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 }
 void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 
-	int rrn = nregistros;
-	int i = 0;
-
-	if (iprimary->raiz == -1) {
-		// Árvore vazia, insere o produto na raiz
-		node_Btree_ip *novo = criar_no_ip();
-		novo->num_chaves++;
-
-		novo->chave[0].rrn = rrn;
-		strcpy(novo->chave[0].pk, P.pk);
-
-		iprimary->raiz = rrn;
-
-		write_btree_ip(novo, rrn);
-		nregistrosip++;
-	}
-	else {
-		// CASO 1: Só existe a raiz
-		if (nregistrosip == 1) {
-
-			// Recupera o nó da raiz
-			node_Btree_ip *atual = read_btree_ip(iprimary->raiz);
-			imprimir_node_ip(atual);
-			
-			if (atual->num_chaves == ordem_ip-1) {
-				printf("no cheio!\n");	//!
-				return;
-			}
-
-			// Encontra a posição para inserir
-			while (i < atual->num_chaves)
-				i++;
-			
-			// Insere na posição correta
-			atual->num_chaves++;
-			strcpy(atual->chave[i].pk, P.pk);
-			atual->chave[i].rrn = rrn;
-
-			// Ordena o vetor de chaves
-			qsort(atual->chave, atual->num_chaves, sizeof(Chave_ip), comparacao_Ip);
-
-			// Escreve no ARQUIVO_IP
-			write_btree_ip(atual, iprimary->raiz);
-		}
-
-
-	}
-
+	
 }
 
 /**** ALTERAÇÃO ****/ //todo
@@ -876,7 +828,7 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 
 	node_Btree_ip *Y = criar_no_ip();
 	Y->folha = X->folha;
-	Y->num_chaves = floor((ordem_ip-1) / 2);
+	Y->num_chaves = (ordem_ip-1) / 2;
 	printf("Criou Y:\n");
 	imprimir_node_ip(Y);
 
