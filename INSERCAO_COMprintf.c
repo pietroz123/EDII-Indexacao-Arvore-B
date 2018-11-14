@@ -1,7 +1,7 @@
 void imprime_prom_dir(PromDir atual) {
 	printf("atual.chavePromovida: %s\n", atual.chavePromovida);
 	printf("atual.filhoDireito: %d\n", atual.filhoDireito);
-	printf("atual.rrnIp: %d\n", atual.rrnIp);
+	printf("atual.rrnD: %d\n", atual.rrnD);
 }
 
 
@@ -77,7 +77,7 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 
 	PromDir retorno;
 	strcpy(retorno.chavePromovida, chave_promovida);
-	retorno.rrnIp = X->chave[(ordem_ip/2)].rrn;
+	retorno.rrnD = X->chave[(ordem_ip/2)].rrn;
 	retorno.filhoDireito = nregistrosip;
 
 	// Zera os descendentes remanescentes
@@ -136,18 +136,18 @@ PromDir insere_aux(int rrnNo, char *k) {
 			printf("Feita a alteracao em X\n");
 			imprimir_node_ip(X);
 
-			PromDir r;  //?
-			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));  //?
-			r.filhoDireito = -1;  //?
+			PromDir r;
+			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));
+			r.filhoDireito = -1;
 			imprime_prom_dir(r);
 
 			write_btree_ip(X, rrnNo);
 
-			return r; // return NULL, NULL  //?Como retornar NULL, NULL?
+			return r; // return NULL, NULL
 		} 
 		else {
 			printf("Nao existe espaco. Vai dividir\n");
-			return divide_no(rrnNo, k, -1);  //? return divide_no(X, k, NULL)
+			return divide_no(rrnNo, k, -1);
 		} 	
 	}
 	else {
@@ -162,7 +162,7 @@ PromDir insere_aux(int rrnNo, char *k) {
 		printf("Chamou insere_aux\n");
 		imprime_prom_dir(atual);
 
-		if (strlen(atual.chavePromovida)) {	//? if (chave_promovida != NULL)
+		if (strlen(atual.chavePromovida)) {
 			printf("Houve overflow\n");
 			strcpy(k, atual.chavePromovida);
 			printf("Como esta X:\n");
@@ -184,37 +184,37 @@ PromDir insere_aux(int rrnNo, char *k) {
 				imprimir_node_ip(X);
 
 				strcpy(X->chave[i+1].pk, k);
-				X->chave[i+1].rrn = atual.rrnIp;
-				X->desc[i+2] = atual.filhoDireito;  //? fi+2[X] <-- filho_direito
-				X->num_chaves++;  //? n[X] <-- x[X] + 1
+				X->chave[i+1].rrn = atual.rrnD;
+				X->desc[i+2] = atual.filhoDireito;
+				X->num_chaves++;
 
 				printf("X apos insercao:\n");
 				imprimir_node_ip(X);
 
-				PromDir r;  //?
-				memset(r.chavePromovida, 0, sizeof(r.chavePromovida));  //?
-				r.filhoDireito = -1;  //?
+				PromDir r;
+				memset(r.chavePromovida, 0, sizeof(r.chavePromovida));
+				r.filhoDireito = -1;
 				printf("retorno:\n");
 				imprime_prom_dir(r);
 
 				write_btree_ip(X, rrnNo);
 
-				return r; // return NULL, NULL  //?Como retornar NULL, NULL?
+				return r; // return NULL, NULL
 			}
 			else {
 				printf("Nao existe espaco. Vai dividir.\n");
 				// Não há espaço, portanto realizamos um split
-				return divide_no(rrnNo, k, atual.filhoDireito);  //? return divide_no(X, k, filho_direito)
+				return divide_no(rrnNo, k, atual.filhoDireito);
 			}
 		}
 		else {
 			printf("Nao houve overflow\n");
-			PromDir r;  //?
-			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));  //?
-			r.filhoDireito = -1;  //?
+			PromDir r;
+			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));
+			r.filhoDireito = -1;
 			printf("retorno:\n");
 			imprime_prom_dir(r);
-			return r; // return NULL, NULL  //?Como retornar NULL, NULL?
+			return r; // return NULL, NULL
 		}
 	}
 
@@ -234,7 +234,7 @@ void insere(Indice *ip, char *k, int rrn) {
 		strcpy(X->chave[0].pk, k);
 		X->chave[0].rrn = nregistros;
 		
-		ip->raiz = 0;	//?	raiz[T] <-- X
+		ip->raiz = 0;
 		write_btree_ip(X, ip->raiz);
 		nregistrosip++;
 	}
@@ -246,18 +246,18 @@ void insere(Indice *ip, char *k, int rrn) {
 		printf("Retorno:\n");
 		imprime_prom_dir(atual);
 
-		if (strlen(atual.chavePromovida)) {		//? if (chave_promovida != NULL)
+		if (strlen(atual.chavePromovida)) {
 			printf("Ocorreu overflow na raiz. Vai criar uma nova\n");
 			node_Btree_ip *X = criar_no_ip();
 			X->folha = 'N';
 			X->num_chaves = 1;
 			strcpy(X->chave[0].pk, atual.chavePromovida);
-			X->chave[0].rrn = atual.rrnIp;
+			X->chave[0].rrn = atual.rrnD;
 			
 			X->desc[0] = ip->raiz;
-			X->desc[1] = atual.filhoDireito;  //? f2[X] <-- filho_direito
+			X->desc[1] = atual.filhoDireito;
 			
-			ip->raiz = nregistrosip;	 //? raiz[T] <-- X
+			ip->raiz = nregistrosip;
 			write_btree_ip(X, nregistrosip);
 			nregistrosip++;
 		}
