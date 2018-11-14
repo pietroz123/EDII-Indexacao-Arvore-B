@@ -842,6 +842,7 @@ int buscar_btree(Indice ip, char *chave) {
 void imprime_prom_dir(PromDir atual) {
 	printf("atual.chavePromovida: %s\n", atual.chavePromovida);
 	printf("atual.filhoDireito: %d\n", atual.filhoDireito);
+	printf("atual.rrnIp: %d\n", atual.rrnIp);
 }
 
 
@@ -986,26 +987,44 @@ PromDir insere_aux(int rrnNo, char *k) {
 		imprime_prom_dir(atual);
 
 		if (strlen(atual.chavePromovida)) {	//? if (chave_promovida != NULL)
+			printf("Houve overflow\n");
 			strcpy(k, atual.chavePromovida);
 			if (X->num_chaves < ordem_ip-1) {
+				printf("Existe espaco\n");
 				i = X->num_chaves-1;
 
+				printf("X antes da movimentacao:\n");
+				imprimir_node_ip(X);
+
 				while (i >= 0 && strcmp(k, X->chave[i].pk) < 0) {
-					strcpy(X->chave[i+1].pk, X->chave[i].pk);
+					X->chave[i+1] = X->chave[i];
 					X->desc[i+2] = X->desc[i+1];
 					i--;
 				}
 
+				printf("Como esta X apos movimentacao:\n");
+				imprimir_node_ip(X);
+
 				strcpy(X->chave[i+1].pk, k);
+				X->chave[i+1].rrn = atual.rrnIp;
 				X->desc[i+2] = atual.filhoDireito;  //? fi+2[X] <-- filho_direito
 				X->num_chaves++;  //? n[X] <-- x[X] + 1
+
+				printf("X apos insercao:\n");
+				imprimir_node_ip(X);
 
 				PromDir r;  //?
 				memset(r.chavePromovida, 0, sizeof(r.chavePromovida));  //?
 				r.filhoDireito = -1;  //?
+				printf("retorno:\n");
+				imprime_prom_dir(r);
+
+				write_btree_ip(X, rrnNo);
+
 				return r; // return NULL, NULL  //?Como retornar NULL, NULL?
 			}
 			else {
+				printf("Nao existe espaco. Vai dividir.\n");
 				// Não há espaço, portanto realizamos um split
 				return divide_no(rrnNo, k, atual.filhoDireito);  //? return divide_no(X, k, filho_direito)
 			}
@@ -1039,7 +1058,7 @@ void insere(Indice *ip, char *k, int rrn) {
 		nregistrosip++;
 	}
 	else {
-		printf("ip->raiz != -1\n");
+		printf("ip->raiz != -1 => %d\n", ip->raiz);
 		printf("Primeira chamada do insere_aux em insere\n");
 		PromDir atual = insere_aux(ip->raiz, k);
 		printf("Voltou para insere()\n");
@@ -1059,6 +1078,7 @@ void insere(Indice *ip, char *k, int rrn) {
 			
 			ip->raiz = nregistrosip;	 //? raiz[T] <-- X
 			write_btree_ip(X, nregistrosip);
+			nregistrosip++;
 		}
 		else {
 			printf("Nao ocorreu overflow\n");
