@@ -96,7 +96,7 @@ typedef struct indice {
 typedef struct prom_dir {
 	char chavePromovida[TAM_PRIMARY_KEY];
 	int rrnD;
-	int filhoDireito;  //? é o nó ou o RRN do nó no ARQUIVO_IP
+	int filhoDireito;
 } PromDir;
 
 /* Variáveis globais */
