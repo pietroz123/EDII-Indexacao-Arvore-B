@@ -900,6 +900,7 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 			i--;
 		}
 		strcpy(X->chave[i+1].pk, k);
+		X->chave[i+1].rrn = nregistros;
 		X->desc[i+2] = rrnDireito;
 	}
 
@@ -1030,9 +1031,12 @@ PromDir insere_aux(int rrnNo, char *k) {
 			}
 		}
 		else {
+			printf("Nao houve overflow\n");
 			PromDir r;  //?
 			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));  //?
 			r.filhoDireito = -1;  //?
+			printf("retorno:\n");
+			imprime_prom_dir(r);
 			return r; // return NULL, NULL  //?Como retornar NULL, NULL?
 		}
 	}
