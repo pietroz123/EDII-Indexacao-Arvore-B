@@ -502,7 +502,6 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 
 	// Coloca a entrada no ARQUIVO de dados
 	strcat(ARQUIVO, entrada);
-	// printf("ARQUIVO: %s\n", ARQUIVO);  //!
 
 	if (iprimary->raiz == -1) {
 		insere(iprimary, novo.pk, nregistrosip);		
