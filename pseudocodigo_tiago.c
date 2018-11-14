@@ -538,6 +538,35 @@ int alterar(Indice iprimary) {
 
 void buscar(Indice iprimary, Indice ibrand) {
 
+	int opcaoBusca;
+	scanf("%d", &opcaoBusca);
+	getchar();
+
+	char chave[TAM_PRIMARY_KEY];
+	scanf("%[^\n]s", chave);
+	getchar();
+
+	int resultadoBusca;
+	
+	switch (opcaoBusca)
+	{
+		case 1:
+			
+			resultadoBusca = buscar_btree(&iprimary, chave);
+			if (resultadoBusca != -1) {
+				printf("rrn: %d\n", resultadoBusca);
+			}
+			else {
+				printf(REGISTRO_N_ENCONTRADO);
+				return;
+			}
+
+			break;
+	
+		default:
+			break;
+	}
+
 }
 
 
@@ -778,8 +807,10 @@ int buscar_btree_privado(int rrn, char *chave) {
 		i++;
 	}
 
-	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) == 0)
+	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) == 0) {
+		// printf("chave atual: %s\n", atual->chave[i].pk);
 		return rrn;
+	}
 
 	if (atual->folha == 'F')
 		return -1;

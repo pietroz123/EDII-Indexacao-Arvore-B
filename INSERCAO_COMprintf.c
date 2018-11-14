@@ -5,7 +5,7 @@ void imprime_prom_dir(PromDir atual) {
 }
 
 
-PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
+PromDir divide_no(int rrnNo, char *k, int rrnDireito, int rrnDados) {
 
 	printf("rrnNo: %d\nrrnDireito: %d\n", rrnNo, rrnDireito);
 	
@@ -31,11 +31,13 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 	printf("Criou Y:\n");
 	imprimir_node_ip(Y);
 
-
 	for (int j = Y->num_chaves-1; j >= 0; j--) {
 		if (!chave_alocada && strcmp(k, X->chave[i].pk) > 0) {
 			strcpy(Y->chave[j].pk, k);
-			Y->chave[j].rrn = nregistros;
+			if (rrnDados == -1)
+				Y->chave[j].rrn = nregistros;
+			else
+				Y->chave[j].rrn = rrnDados;
 			Y->desc[j+1] = rrnDireito;
 			chave_alocada = 1; 
 		}
@@ -139,6 +141,7 @@ PromDir insere_aux(int rrnNo, char *k) {
 			PromDir r;
 			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));
 			r.filhoDireito = -1;
+			r.rrnD = -1;
 			imprime_prom_dir(r);
 
 			write_btree_ip(X, rrnNo);
@@ -147,7 +150,7 @@ PromDir insere_aux(int rrnNo, char *k) {
 		} 
 		else {
 			printf("Nao existe espaco. Vai dividir\n");
-			return divide_no(rrnNo, k, -1);
+			return divide_no(rrnNo, k, -1, -1);
 		} 	
 	}
 	else {
@@ -194,6 +197,7 @@ PromDir insere_aux(int rrnNo, char *k) {
 				PromDir r;
 				memset(r.chavePromovida, 0, sizeof(r.chavePromovida));
 				r.filhoDireito = -1;
+				r.rrnD = -1;
 				printf("retorno:\n");
 				imprime_prom_dir(r);
 
@@ -204,7 +208,7 @@ PromDir insere_aux(int rrnNo, char *k) {
 			else {
 				printf("Nao existe espaco. Vai dividir.\n");
 				// Não há espaço, portanto realizamos um split
-				return divide_no(rrnNo, k, atual.filhoDireito);
+				return divide_no(rrnNo, k, atual.filhoDireito, atual.rrnD);
 			}
 		}
 		else {
@@ -212,6 +216,7 @@ PromDir insere_aux(int rrnNo, char *k) {
 			PromDir r;
 			memset(r.chavePromovida, 0, sizeof(r.chavePromovida));
 			r.filhoDireito = -1;
+			r.rrnD = -1;
 			printf("retorno:\n");
 			imprime_prom_dir(r);
 			return r; // return NULL, NULL
