@@ -916,6 +916,22 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 	X->num_chaves = (ordem_ip / 2);							// O número de chaves é reduzido pela metade
 
 
+	PromDir retorno;
+	strcpy(retorno.chavePromovida, chave_promovida);
+	retorno.rrnIp = X->chave[(ordem_ip/2)].rrn;
+	retorno.filhoDireito = nregistrosip;
+
+	// Zera os descendentes remanescentes
+	if (X->num_chaves < ordem_ip) {
+		for (int i = ordem_ip-1; i > X->num_chaves; i--)
+			X->desc[i] = -1;
+	}
+	
+	// Zera a posicao que contem a chave promovida
+	memset(X->chave[(ordem_ip/2)].pk, 0, sizeof(X->chave[(ordem_ip/2)].pk));
+	X->chave[(ordem_ip/2)].rrn = -1;
+	
+
 	printf("Apos PROMOCAO:\n");
 	printf("X:\n");
 	imprimir_node_ip(X);
@@ -923,17 +939,17 @@ PromDir divide_no(int rrnNo, char *k, int rrnDireito) {
 	imprimir_node_ip(Y);
 
 
-	PromDir retorno;
-	strcpy(retorno.chavePromovida, chave_promovida);
-	retorno.rrnIp = X->chave[(ordem_ip/2)].rrn;
-	retorno.filhoDireito = nregistrosip;
-	
-	// Zera a posicao que contem a chave promovida
-	memset(X->chave[(ordem_ip/2)].pk, 0, sizeof(X->chave[(ordem_ip/2)].pk));
-	X->chave[(ordem_ip/2)].rrn = -1;
-
 	write_btree_ip(X, rrnNo);
 	write_btree_ip(Y, nregistrosip);
+	char *p;
+	if (!*ARQUIVO_IP)
+		puts(ARQUIVO_VAZIO);
+	else
+		for (p = ARQUIVO_IP; *p != '\0'; p += tamanho_registro_ip)
+		{
+			fwrite(p, 1, tamanho_registro_ip, stdout);
+			puts("");
+		}
 	nregistrosip++;
 
 	return retorno;
@@ -990,6 +1006,8 @@ PromDir insere_aux(int rrnNo, char *k) {
 		if (strlen(atual.chavePromovida)) {	//? if (chave_promovida != NULL)
 			printf("Houve overflow\n");
 			strcpy(k, atual.chavePromovida);
+			printf("Como esta X:\n");
+			imprimir_node_ip(X);
 			if (X->num_chaves < ordem_ip-1) {
 				printf("Existe espaco\n");
 				i = X->num_chaves-1;
