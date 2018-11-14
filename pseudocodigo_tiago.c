@@ -184,7 +184,7 @@ node_Btree_is *criar_no_is();
 void libera_no(void *node, char ip);
 
 // Buscar na árvore
-int buscar_btree(Indice ip, char *chave);
+int buscar_btree(Indice *ip, char *chave);
 
 // Funções de inserção
 void insere(Indice *ip, char *k, int rrn);
@@ -303,7 +303,7 @@ int main()
 		//!DELETAR
 		case 9:
 			scanf("%[^\n]s", chave);
-			int resultadoBusca = buscar_btree(iprimary, chave);
+			int resultadoBusca = buscar_btree(&iprimary, chave);
 			if (resultadoBusca != -1)
 				printf("ACHOU: rrn=%d\n", resultadoBusca);
 			else	
@@ -504,8 +504,19 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	strcat(ARQUIVO, entrada);
 	// printf("ARQUIVO: %s\n", ARQUIVO);  //!
 
-	// inserir_registro_indices(iprimary, ibrand, novo);
-	insere(iprimary, novo.pk, nregistrosip);
+	if (iprimary->raiz == -1) {
+		insere(iprimary, novo.pk, nregistrosip);		
+	}
+	else {
+		int resultadoBusca = buscar_btree(iprimary, novo.pk);
+		if (resultadoBusca == -1)
+			insere(iprimary, novo.pk, nregistrosip);
+		else {
+			printf(ERRO_PK_REPETIDA, novo.pk);
+			return;
+		}
+	}
+
 	nregistros++;
 
 	printf("nregistros: %d\n", nregistros);  		//!
@@ -826,8 +837,8 @@ int buscar_btree_privado(int rrn, char *chave) {
 
 
 }
-int buscar_btree(Indice ip, char *chave) {
-	return buscar_btree_privado(ip.raiz, chave);
+int buscar_btree(Indice *ip, char *chave) {
+	return buscar_btree_privado(ip->raiz, chave);
 }
 
 
@@ -836,8 +847,6 @@ int buscar_btree(Indice ip, char *chave) {
    ========================================== */
 
 
-//!!!!!!!!!!!!!!!!!!!!!
-//? ONDE eu utilizo os write_btree e COMO utilizar?
 
 void imprime_prom_dir(PromDir atual) {
 	printf("atual.chavePromovida: %s\n", atual.chavePromovida);
