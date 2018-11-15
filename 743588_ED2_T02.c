@@ -190,9 +190,9 @@ int buscar_btree(Indice *ip, char *chave, int modo);
 void pre_ordem(Indice ip);
 
 // Funções de inserção
-void insere(Indice *ip, Chave_ip k);
-PromDir insere_aux(int rrnNo, Chave_ip k);
-PromDir divide_no(int rrnNo, Chave_ip k, int rrnDireito);
+void insere_ip(Indice *ip, Chave_ip k);
+PromDir insere_aux_ip(int rrnNo, Chave_ip k);
+PromDir divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito);
 
 
 
@@ -486,12 +486,12 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	k.rrn = nregistros;
 
 	if (iprimary->raiz == -1) {
-		insere(iprimary, k);		
+		insere_ip(iprimary, k);		
 	}
 	else {
 		int resultadoBusca = buscar_btree(iprimary, novo.pk, 0);
 		if (resultadoBusca == -1)
-			insere(iprimary, k);
+			insere_ip(iprimary, k);
 		else {
 			printf(ERRO_PK_REPETIDA, novo.pk);
 			return;
@@ -883,7 +883,12 @@ void imprime_prom_dir(PromDir atual) {
 }
 
 
-PromDir divide_no(int rrnNo, Chave_ip k, int rrnDireito) {
+/* =========================================================== 
+   ===== INSERÇÃO ÁRVORE DE ÍNDICES PRIMÁRIOS - iprimary ===== 
+   =========================================================== */
+
+
+PromDir divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 
 	// printf("rrnNo: %d\nrrnDireito: %d\n", rrnNo, rrnDireito);   //!?!
 	
@@ -987,7 +992,7 @@ PromDir divide_no(int rrnNo, Chave_ip k, int rrnDireito) {
 	return retorno;
 }
 
-PromDir insere_aux(int rrnNo, Chave_ip k) {
+PromDir insere_aux_ip(int rrnNo, Chave_ip k) {
 
 	int i;
 	node_Btree_ip *X = read_btree_ip(rrnNo);
@@ -1022,7 +1027,7 @@ PromDir insere_aux(int rrnNo, Chave_ip k) {
 		else {
 			// printf("Nao existe espaco. Vai dividir\n");   //!?!
 			libera_no_ip(X);
-			return divide_no(rrnNo, k, -1);
+			return divide_no_ip(rrnNo, k, -1);
 		} 	
 	}
 	else {
@@ -1032,9 +1037,9 @@ PromDir insere_aux(int rrnNo, Chave_ip k) {
 			i--;
 		i++;
 
-		// printf("Vai chamar insere_aux\n");   //!?!
-		PromDir atual = insere_aux(X->desc[i], k);
-		// printf("Chamou insere_aux\n");   //!?!
+		// printf("Vai chamar insere_aux_ip\n");   //!?!
+		PromDir atual = insere_aux_ip(X->desc[i], k);
+		// printf("Chamou insere_aux_ip\n");   //!?!
 		// imprime_prom_dir(atual);   //!?!
 
 		if (strlen(atual.chave_promovida.pk)) {
@@ -1081,7 +1086,7 @@ PromDir insere_aux(int rrnNo, Chave_ip k) {
 				// printf("Nao existe espaco. Vai dividir.\n");   //!?!
 				// Não há espaço, portanto realizamos um split
 				libera_no_ip(X);
-				return divide_no(rrnNo, k, atual.filhoDireito);
+				return divide_no_ip(rrnNo, k, atual.filhoDireito);
 			}
 		}
 		else {
@@ -1103,7 +1108,7 @@ PromDir insere_aux(int rrnNo, Chave_ip k) {
 }
 
 
-void insere(Indice *ip, Chave_ip k) {
+void insere_ip(Indice *ip, Chave_ip k) {
 
 	// printf("------ Vai inserir '%s' ------\n", k.pk);   //!?!
 
@@ -1123,9 +1128,9 @@ void insere(Indice *ip, Chave_ip k) {
 	}
 	else {
 		// printf("ip->raiz != -1 => %d\n", ip->raiz);   //!?!
-		// printf("Primeira chamada do insere_aux em insere\n");   //!?!
-		PromDir atual = insere_aux(ip->raiz, k);
-		// printf("Voltou para insere()\n");   //!?!
+		// printf("Primeira chamada do insere_aux_ip em insere_ip\n");   //!?!
+		PromDir atual = insere_aux_ip(ip->raiz, k);
+		// printf("Voltou para insere_ip()\n");   //!?!
 		// printf("Retorno:\n");   //!?!
 		// imprime_prom_dir(atual);   //!?!
 
@@ -1156,6 +1161,7 @@ void insere(Indice *ip, Chave_ip k) {
 
 
 }
+
 
 
 /* ==========================================
