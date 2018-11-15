@@ -298,21 +298,6 @@ int main()
 		case 8: /* Libera toda memória alocada dinâmicamente (se ainda houver) e encerra */
 			return 0;
 
-		//!DELETAR
-		case 9:
-			scanf("%[^\n]s", chave);
-			int resultadoBusca = buscar_btree(&iprimary, chave, 1);
-			if (resultadoBusca != -1)
-				printf("ACHOU: rrn=%d\n", resultadoBusca);
-			else	
-				printf("NAO ACHOU\n");
-			break;
-		
-		//!DELETAR
-		case 10:
-			pre_ordem(iprimary);
-			break;
-
 		default: /* exibe mensagem de erro */
 			printf(OPCAO_INVALIDA);
 			break;
@@ -620,16 +605,6 @@ void write_btree(void *salvar, int rrn, char ip) {
 
 }
 
-//!DELETAR
-void teste() {
-
-	char nome[10] = {"Pietro"};
-	printf("nome (ANTES): %s\n", nome);
-
-	memset(nome, 0, sizeof(nome));	//Zera uma string
-	printf("nome (DEPOIS): %s\n", nome);	
-
-}
 
 // Sobrescreve o registro de um nó na posição do RRN do Arquivo de Índices Primários
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
@@ -847,30 +822,35 @@ int buscar_btree(Indice *ip, char *chave, int modo) {
    =============== PERCURSO =================
    ========================================== */
 
+// printf("%d - %s\n", nivel, atual->chave[i].pk);
 
+
+void imprimir_no(node_Btree_ip *x, int nivel) {
+	for (int i = 0; i < x->num_chaves; i++) {
+		if (i == 0)
+			if (i+1 == x->num_chaves)
+				printf("%d - %s", nivel, x->chave[i].pk);
+			else
+				printf("%d - %s, ", nivel, x->chave[i].pk);
+		else
+			if (i == x->num_chaves-1)
+				printf("%s", x->chave[i].pk);
+			else
+				printf("%s, ", x->chave[i].pk);
+	}
+	printf("\n");
+}
 void pre_ordem_privado(int rrn, int nivel) {
-	// printf("rrnAtual: %d\n", rrn);
+
 	if (rrn == -1)
 		return;
-	node_Btree_ip *atual = read_btree_ip(rrn);
-	// imprimir_node_ip(atual);
 
-	int i;
-	for (i = 0; i < atual->num_chaves; i++) {
-		if (i == 0)
-			if (i+1 == atual->num_chaves)
-				printf("%d - %s\n", nivel, atual->chave[i].pk);
-			else
-				printf("%d - %s, ", nivel, atual->chave[i].pk);
-		else
-			if (i == atual->num_chaves-1)
-				printf("%s\n", atual->chave[i].pk);
-			else
-				printf("%s, ", nivel, atual->chave[i].pk);
-			
+	node_Btree_ip *atual = read_btree_ip(rrn);
+	imprimir_no(atual, nivel);
+
+	for (int i = 0; i <= atual->num_chaves; i++) {
 		pre_ordem_privado(atual->desc[i], nivel+1);
 	}
-	pre_ordem_privado(atual->desc[i], nivel+1);
 
 }
 void pre_ordem(Indice ip) {
