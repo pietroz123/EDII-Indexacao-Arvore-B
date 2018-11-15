@@ -493,17 +493,44 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	// Coloca os dados na string entrada[]
 	sprintf(entrada, "%s@%s@%s@%s@%s@%s@%s@%s@", novo.pk, novo.nome, novo.marca, novo.data, novo.ano, novo.preco, novo.desconto, novo.categoria);
 
-	Chave_ip k;
-	strcpy(k.pk, novo.pk);
-	k.rrn = nregistros;
+	Chave_ip kp;
+	strcpy(kp.pk, novo.pk);
+	kp.rrn = nregistros;
+
+
+	Chave_is ks;
+
+	char string[TAM_STRING_INDICE];
+	memset(string, 0, TAM_STRING_INDICE);
+	strcat(string, novo.marca);
+	strcat(string, "$");
+	strcat(string, novo.nome);	
+
+	int restantes = 101 - strlen(string);
+    for (int i = 0; i < restantes; i++)
+        strcat(string, "#");
+
+	strcpy(ks.pk, novo.pk);
+	strcpy(ks.string, string);
+
+	//!DELETAR
+	node_Btree_is *teste = criar_no_is();
+	teste->num_chaves = 2;
+	strcpy(teste->chave[0].pk, novo.pk);
+	strcpy(teste->chave[0].string, string);
+	strcpy(teste->chave[1].pk, "MOLO301217");
+	strcpy(teste->chave[1].string, "LOGITECH$MOUSE GAMER 12000DPI########################################################################");
+	write_btree_is(teste, 0);
+
+
 
 	if (iprimary->raiz == -1) {
-		insere_ip(iprimary, k);		
+		insere_ip(iprimary, kp);		
 	}
 	else {
 		int resultadoBusca = buscar_btree(iprimary, novo.pk, 0);
 		if (resultadoBusca == -1)
-			insere_ip(iprimary, k);
+			insere_ip(iprimary, kp);
 		else {
 			printf(ERRO_PK_REPETIDA, novo.pk);
 			return;
@@ -635,7 +662,7 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
 	strcat(registroIp, nChaves);
 
-	// 10 bytes da CHAVE PRIMÁRIA
+	// 10 bytes da CHAVE PRIMÁRIA e 4 bytes para o RRN
 	for (int i = 0; i < ordem_ip-1; i++) {
 		if (salvar->chave[i].rrn != -1) {
 			sprintf(chavePrimaria, "%s", salvar->chave[i].pk);
@@ -672,6 +699,57 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 
 void write_btree_is(node_Btree_is *salvar, int rrn) {
 
+	char *r = ARQUIVO_IS + rrn*tamanho_registro_is;
+	char registroIs[tamanho_registro_is+1];		/* String para armazenar o novo registro */
+	memset(registroIs, 0, sizeof(registroIs));	// "Zera" a string
+
+	char nChaves[4];
+	char chavePrimaria[TAM_PRIMARY_KEY];
+	char string[TAM_STRING_INDICE];
+	char folha = salvar->folha;
+	char descendente[4];
+
+	// 3 bytes para o NÚMERO DE CHAVES 
+	snprintf(nChaves, sizeof(nChaves), "%03d", salvar->num_chaves);
+	strcat(registroIs, nChaves);
+
+
+	// 10 bytes da CHAVE PRIMÁRIA e 101 bytes para a STRING
+	for (int i = 0; i < ordem_is-1; i++) {
+		if (strlen(salvar->chave[i].pk)) {
+
+			sprintf(chavePrimaria, "%s", salvar->chave[i].pk);
+			sprintf(string, "%s", salvar->chave[i].string);
+		
+		} else {
+		
+			sprintf(chavePrimaria, "##########");
+			sprintf(string, "#####################################################################################################");
+		
+		}
+
+		strcat(registroIs, chavePrimaria);
+		strcat(registroIs, string);
+	}
+
+	// 1 byte FOLHA (F) ou NÃO (N)
+	if (folha == 'F')
+		strcat(registroIs, "F");
+	else
+		strcat(registroIs, "N");
+
+	// 3 bytes para os DESCENDENTES
+	for (int i = 0; i < ordem_is; i++) {
+		if (salvar->desc[i] != -1) {
+			snprintf(descendente, sizeof(descendente), "%03d", salvar->desc[i]);
+		} else {
+			sprintf(descendente, "***");
+		}
+		strcat(registroIs, descendente);
+	}
+
+	/* Coloca no ARQUIVO PRIMÁRIO */
+	strncpy(r, registroIs, tamanho_registro_is);
 
 }
 
@@ -782,6 +860,29 @@ node_Btree_ip *criar_no_ip() {
 }
 
 node_Btree_is *criar_no_is() {
+
+	// Aloca o novo nó
+	node_Btree_is *novo = (node_Btree_is*) malloc(sizeof(node_Btree_is));
+	
+	// Aloca os vetores
+	novo->chave = (Chave_is*) malloc((ordem_is-1) * sizeof(Chave_is));	/* MAXchaves = M-1 */
+	novo->desc = (int*) malloc((ordem_is) * sizeof(int));				/* MAXfilhos = M */
+
+	// Inicializa as chaves (pk), nomes (string) e descententes
+	for (int i = 0; i < ordem_is-1; i++) {
+		memset(novo->chave[i].pk, 0, TAM_PRIMARY_KEY);
+		memset(novo->chave[i].string, 0, TAM_STRING_INDICE);
+	}
+	for (int i = 0; i < ordem_is; i++)
+		novo->desc[i] = -1;
+	
+	// Cria o nó como folha
+	novo->folha = 'F';
+	
+	// O numero de chaves inicialmente é 0
+	novo->num_chaves = 0;
+
+	return novo;
 
 }
 
