@@ -92,11 +92,19 @@ typedef struct indice {
 	int raiz;
 } Indice;
 
+
 // Struct para as funções de inserção
-typedef struct prom_dir {
+
+typedef struct prom_dir_ip {
 	Chave_ip chave_promovida;
 	int filhoDireito;
-} PromDir;
+} PromDirIp;
+
+typedef struct prom_dir_is {
+	Chave_is chave_promovida;
+	int filhoDireito;
+} PromDirIs;
+
 
 /* Variáveis globais */
 char ARQUIVO[MAX_REGISTROS * TAM_REGISTRO + 1];
@@ -135,9 +143,6 @@ void criar_iprimary(Indice *iprimary);
 
 /* (Re)faz o índice de marcas  */
 void criar_ibrand(Indice *ibrand);
-
-// Atualiza os dois índices com o novo registro inserido
-void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P);
 
 
 
@@ -190,9 +195,16 @@ int buscar_btree(Indice *ip, char *chave, int modo);
 void pre_ordem(Indice ip);
 
 // Funções de inserção
+
+/* iprimary */
 void insere_ip(Indice *ip, Chave_ip k);
-PromDir insere_aux_ip(int rrnNo, Chave_ip k);
-PromDir divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito);
+PromDirIp insere_aux_ip(int rrnNo, Chave_ip k);
+PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito);
+
+/* ibrand */
+void insere_is(Indice *ip, Chave_is k);
+PromDirIs insere_aux_is(int rrnNo, Chave_is k);
+PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito);
 
 
 
@@ -514,10 +526,7 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 	// printf("iprimary->raiz: %d\n", iprimary->raiz);	//!?!
 
 }
-void inserir_registro_indices(Indice *iprimary, Indice *ibrand, Produto P) {
 
-	
-}
 
 /**** ALTERAÇÃO ****/ //todo
 
@@ -876,7 +885,7 @@ void pre_ordem(Indice ip) {
 
 
 
-void imprime_prom_dir(PromDir atual) {
+void imprime_prom_dir_ip(PromDirIp atual) {
 	printf("atual.chavePromovida.pk: %s\n", atual.chave_promovida.pk);
 	printf("atual.chave_promovida.rrn: %d\n", atual.chave_promovida.pk);
 	printf("atual.filhoDireito: %d\n", atual.filhoDireito);
@@ -888,7 +897,7 @@ void imprime_prom_dir(PromDir atual) {
    =========================================================== */
 
 
-PromDir divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
+PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 
 	// printf("rrnNo: %d\nrrnDireito: %d\n", rrnNo, rrnDireito);   //!?!
 	
@@ -949,7 +958,7 @@ PromDir divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 	X->num_chaves = (ordem_ip / 2);							// O número de chaves é reduzido pela metade
 
 
-	PromDir retorno;
+	PromDirIp retorno;
 	retorno.chave_promovida = chave_promovida;
 	retorno.filhoDireito = nregistrosip;
 
@@ -992,7 +1001,7 @@ PromDir divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 	return retorno;
 }
 
-PromDir insere_aux_ip(int rrnNo, Chave_ip k) {
+PromDirIp insere_aux_ip(int rrnNo, Chave_ip k) {
 
 	int i;
 	node_Btree_ip *X = read_btree_ip(rrnNo);
@@ -1013,11 +1022,11 @@ PromDir insere_aux_ip(int rrnNo, Chave_ip k) {
 			// printf("Feita a alteracao em X\n");   //!?!
 			// imprimir_node_ip(X);   //!?!
 
-			PromDir r;
+			PromDirIp r;
 			memset(r.chave_promovida.pk, 0, sizeof(r.chave_promovida.pk));
 			r.chave_promovida.rrn = -1;
 			r.filhoDireito = -1;
-			// imprime_prom_dir(r);   //!?!
+			// imprime_prom_dir_ip(r);   //!?!
 
 			write_btree_ip(X, rrnNo);
 			libera_no_ip(X);
@@ -1038,9 +1047,9 @@ PromDir insere_aux_ip(int rrnNo, Chave_ip k) {
 		i++;
 
 		// printf("Vai chamar insere_aux_ip\n");   //!?!
-		PromDir atual = insere_aux_ip(X->desc[i], k);
+		PromDirIp atual = insere_aux_ip(X->desc[i], k);
 		// printf("Chamou insere_aux_ip\n");   //!?!
-		// imprime_prom_dir(atual);   //!?!
+		// imprime_prom_dir_ip(atual);   //!?!
 
 		if (strlen(atual.chave_promovida.pk)) {
 			// printf("Houve overflow\n");   //!?!
@@ -1070,12 +1079,12 @@ PromDir insere_aux_ip(int rrnNo, Chave_ip k) {
 				// printf("X apos insercao:\n");   //!?!
 				// imprimir_node_ip(X);   //!?!
 
-				PromDir r;
+				PromDirIp r;
 				memset(r.chave_promovida.pk, 0, sizeof(r.chave_promovida.pk));
 				r.chave_promovida.rrn = -1;
 				r.filhoDireito = -1;
 				// printf("retorno:\n");   //!?!
-				// imprime_prom_dir(r);   //!?!
+				// imprime_prom_dir_ip(r);   //!?!
 
 				write_btree_ip(X, rrnNo);
 				libera_no_ip(X);
@@ -1091,12 +1100,12 @@ PromDir insere_aux_ip(int rrnNo, Chave_ip k) {
 		}
 		else {
 			// printf("Nao houve overflow\n");   //!?!
-			PromDir r;
+			PromDirIp r;
 			memset(r.chave_promovida.pk, 0, sizeof(r.chave_promovida.pk));
 			r.chave_promovida.rrn = -1;
 			r.filhoDireito = -1;
 			// printf("retorno:\n");   //!?!
-			// imprime_prom_dir(r);   //!?!
+			// imprime_prom_dir_ip(r);   //!?!
 
 			libera_no_ip(X);
 			
@@ -1129,18 +1138,16 @@ void insere_ip(Indice *ip, Chave_ip k) {
 	else {
 		// printf("ip->raiz != -1 => %d\n", ip->raiz);   //!?!
 		// printf("Primeira chamada do insere_aux_ip em insere_ip\n");   //!?!
-		PromDir atual = insere_aux_ip(ip->raiz, k);
+		PromDirIp atual = insere_aux_ip(ip->raiz, k);
 		// printf("Voltou para insere_ip()\n");   //!?!
 		// printf("Retorno:\n");   //!?!
-		// imprime_prom_dir(atual);   //!?!
+		// imprime_prom_dir_ip(atual);   //!?!
 
 		if (strlen(atual.chave_promovida.pk)) {
 			// printf("Ocorreu overflow na raiz. Vai criar uma nova\n");   //!?!
 			node_Btree_ip *X = criar_no_ip();
 			X->folha = 'N';
 			X->num_chaves = 1;
-			// strcpy(X->chave[0].pk, atual.chavePromovida);
-			// X->chave[0].rrn = atual.rrnD;
 			X->chave[0] = atual.chave_promovida;
 			
 			X->desc[0] = ip->raiz;
@@ -1161,6 +1168,14 @@ void insere_ip(Indice *ip, Chave_ip k) {
 
 
 }
+
+
+/* =========================================================== 
+   ===== INSERÇÃO ÁRVORE DE ÍNDICES SECUNDÁRIOS - ibrand ===== 
+   =========================================================== */
+
+
+
 
 
 
