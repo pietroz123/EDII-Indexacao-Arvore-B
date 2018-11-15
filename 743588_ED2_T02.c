@@ -190,7 +190,7 @@ PromDir insere_aux(int rrnNo, Chave_ip k);
 PromDir divide_no(int rrnNo, Chave_ip k, int rrnDireito);
 
 // Imprimir
-void pre_order(Indice ip);
+void pre_ordem(Indice ip);
 
 
 /*
@@ -310,7 +310,7 @@ int main()
 		
 		//!DELETAR
 		case 10:
-			pre_order(iprimary);
+			pre_ordem(iprimary);
 			break;
 
 		default: /* exibe mensagem de erro */
@@ -582,6 +582,30 @@ void buscar(Indice iprimary, Indice ibrand) {
 
 void listar(Indice iprimary, Indice ibrand) {
 
+	int opcaoListagem;
+	scanf("%d", &opcaoListagem);
+
+	
+	switch (opcaoListagem)
+	{
+		case 1:
+			
+			// Caso nao exista nenhum registro
+			if (iprimary.raiz == -1) {
+				printf(REGISTRO_N_ENCONTRADO);
+				return;
+			}
+
+			pre_ordem(iprimary);
+
+
+
+			break;
+	
+		default:
+			break;
+	}
+
 }
 
 
@@ -824,7 +848,7 @@ int buscar_btree(Indice *ip, char *chave, int modo) {
    ========================================== */
 
 
-void pre_order_privado(int rrn) {
+void pre_ordem_privado(int rrn, int nivel) {
 	// printf("rrnAtual: %d\n", rrn);
 	if (rrn == -1)
 		return;
@@ -833,14 +857,24 @@ void pre_order_privado(int rrn) {
 
 	int i;
 	for (i = 0; i < atual->num_chaves; i++) {
-		printf("%s ", atual->chave[i].pk);
-		pre_order_privado(atual->desc[i]);
+		if (i == 0)
+			if (i+1 == atual->num_chaves)
+				printf("%d - %s\n", nivel, atual->chave[i].pk);
+			else
+				printf("%d - %s, ", nivel, atual->chave[i].pk);
+		else
+			if (i == atual->num_chaves-1)
+				printf("%s\n", atual->chave[i].pk);
+			else
+				printf("%s, ", nivel, atual->chave[i].pk);
+			
+		pre_ordem_privado(atual->desc[i], nivel+1);
 	}
-	pre_order_privado(atual->desc[i]);
+	pre_ordem_privado(atual->desc[i], nivel+1);
 
 }
-void pre_order(Indice ip) {
-	pre_order_privado(ip.raiz);
+void pre_ordem(Indice ip) {
+	pre_ordem_privado(ip.raiz, 1);
 }
 
 
