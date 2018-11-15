@@ -180,17 +180,20 @@ node_Btree_is *criar_no_is();
 
 // Libera todos os campos dinâmicos do nó, inclusive ele mesmo
 void libera_no(void *node, char ip);
+void libera_no_ip(node_Btree_ip *x);
+void libera_no_is(node_Btree_is *x);
 
 // Buscar na árvore
 int buscar_btree(Indice *ip, char *chave, int modo);
+
+// Imprimir
+void pre_ordem(Indice ip);
 
 // Funções de inserção
 void insere(Indice *ip, Chave_ip k);
 PromDir insere_aux(int rrnNo, Chave_ip k);
 PromDir divide_no(int rrnNo, Chave_ip k, int rrnDireito);
 
-// Imprimir
-void pre_ordem(Indice ip);
 
 
 /*
@@ -549,6 +552,7 @@ void buscar(Indice iprimary, Indice ibrand) {
 				exibir_registro(resultadoBusca);
 			}
 			else {
+				printf("\n");
 				printf(REGISTRO_N_ENCONTRADO);
 				return;
 			}
@@ -804,13 +808,20 @@ int buscar_btree_privado(int rrn, char *chave, int modo) {
 	}
 
 	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) == 0) {
-		return atual->chave[i].rrn;
+		int resultado = atual->chave[i].rrn;
+		libera_no_ip(atual);
+		return resultado;
 	}
 
-	if (atual->folha == 'F')
+	if (atual->folha == 'F') {
+		libera_no_ip(atual);
 		return -1;
-	else 
-		return buscar_btree_privado(atual->desc[i], chave, modo);
+	}
+	else { 
+		int resultado = buscar_btree_privado(atual->desc[i], chave, modo);
+		libera_no_ip(atual);
+		return resultado;
+	}
 
 
 }
@@ -851,6 +862,8 @@ void pre_ordem_privado(int rrn, int nivel) {
 		pre_ordem_privado(atual->desc[i], nivel+1);
 	}
 
+	libera_no_ip(atual);
+
 }
 void pre_ordem(Indice ip) {
 	pre_ordem_privado(ip.raiz, 1);
@@ -875,16 +888,9 @@ PromDir divide_no(int rrnNo, Chave_ip k, int rrnDireito) {
 	// printf("rrnNo: %d\nrrnDireito: %d\n", rrnNo, rrnDireito);   //!?!
 	
 	node_Btree_ip *X = read_btree_ip(rrnNo);
-	node_Btree_ip *filho_direito;
-	if (rrnDireito != -1)
-		filho_direito = read_btree_ip(rrnDireito);
-	else
-		filho_direito = criar_no_ip();
 	
 	// printf("X:\n");   //!?!
 	// imprimir_node_ip(X);   //!?!
-	// printf("filho_direito:\n");   //!?!
-	// imprimir_node_ip(filho_direito);   //!?!
 
 	
 	int i = X->num_chaves-1;
@@ -962,6 +968,11 @@ PromDir divide_no(int rrnNo, Chave_ip k, int rrnDireito) {
 
 	write_btree_ip(X, rrnNo);
 	write_btree_ip(Y, nregistrosip);
+	// Podemos desalocar Y visto que já o escrevemos no ARQUIVO_IP
+	libera_no_ip(X);
+	libera_no_ip(Y);
+
+
 	// char *p;   //!?!
 	// if (!*ARQUIVO_IP)   //!?!
 		// puts(ARQUIVO_VAZIO);   //!?!
@@ -1004,11 +1015,13 @@ PromDir insere_aux(int rrnNo, Chave_ip k) {
 			// imprime_prom_dir(r);   //!?!
 
 			write_btree_ip(X, rrnNo);
+			libera_no_ip(X);
 
 			return r; // return NULL, NULL
 		} 
 		else {
 			// printf("Nao existe espaco. Vai dividir\n");   //!?!
+			libera_no_ip(X);
 			return divide_no(rrnNo, k, -1);
 		} 	
 	}
@@ -1060,12 +1073,14 @@ PromDir insere_aux(int rrnNo, Chave_ip k) {
 				// imprime_prom_dir(r);   //!?!
 
 				write_btree_ip(X, rrnNo);
+				libera_no_ip(X);
 
 				return r; // return NULL, NULL
 			}
 			else {
 				// printf("Nao existe espaco. Vai dividir.\n");   //!?!
 				// Não há espaço, portanto realizamos um split
+				libera_no_ip(X);
 				return divide_no(rrnNo, k, atual.filhoDireito);
 			}
 		}
@@ -1077,6 +1092,9 @@ PromDir insere_aux(int rrnNo, Chave_ip k) {
 			r.filhoDireito = -1;
 			// printf("retorno:\n");   //!?!
 			// imprime_prom_dir(r);   //!?!
+
+			libera_no_ip(X);
+			
 			return r; // return NULL, NULL
 		}
 	}
@@ -1097,7 +1115,10 @@ void insere(Indice *ip, Chave_ip k) {
 		X->chave[0] = k;
 		
 		ip->raiz = 0;
+
 		write_btree_ip(X, ip->raiz);
+		libera_no_ip(X);
+
 		nregistrosip++;
 	}
 	else {
@@ -1121,7 +1142,10 @@ void insere(Indice *ip, Chave_ip k) {
 			X->desc[1] = atual.filhoDireito;
 			
 			ip->raiz = nregistrosip;
+
 			write_btree_ip(X, nregistrosip);
+			libera_no_ip(X);
+
 			nregistrosip++;
 		}
 		else {
@@ -1131,4 +1155,21 @@ void insere(Indice *ip, Chave_ip k) {
 	}
 
 
+}
+
+
+/* ==========================================
+   =============== DESALOCAR ================
+   ========================================== */
+
+
+void libera_no_ip(node_Btree_ip *x) {
+	free(x->chave);
+	free(x->desc);
+	free(x);
+}
+void libera_no_is(node_Btree_is *x) {
+	free(x->chave);
+	free(x->desc);
+	free(x);
 }
