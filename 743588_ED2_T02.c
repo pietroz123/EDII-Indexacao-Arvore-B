@@ -182,7 +182,7 @@ node_Btree_is *criar_no_is();
 void libera_no(void *node, char ip);
 
 // Buscar na árvore
-int buscar_btree(Indice *ip, char *chave);
+int buscar_btree(Indice *ip, char *chave, int modo);
 
 // Funções de inserção
 void insere(Indice *ip, Chave_ip k);
@@ -301,7 +301,7 @@ int main()
 		//!DELETAR
 		case 9:
 			scanf("%[^\n]s", chave);
-			int resultadoBusca = buscar_btree(&iprimary, chave);
+			int resultadoBusca = buscar_btree(&iprimary, chave, 1);
 			if (resultadoBusca != -1)
 				printf("ACHOU: rrn=%d\n", resultadoBusca);
 			else	
@@ -501,7 +501,7 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 		insere(iprimary, k);		
 	}
 	else {
-		int resultadoBusca = buscar_btree(iprimary, novo.pk);
+		int resultadoBusca = buscar_btree(iprimary, novo.pk, 0);
 		if (resultadoBusca == -1)
 			insere(iprimary, k);
 		else {
@@ -556,9 +556,13 @@ void buscar(Indice iprimary, Indice ibrand) {
 	{
 		case 1:
 			
-			resultadoBusca = buscar_btree(&iprimary, chave);
+			printf(NOS_PERCORRIDOS_IP, chave);
+
+			resultadoBusca = buscar_btree(&iprimary, chave, 1);
 			if (resultadoBusca != -1) {
-				printf("rrn: %d\n", resultadoBusca);
+				// printf("rrn: %d\n", resultadoBusca);
+				printf("\n");
+				exibir_registro(resultadoBusca);
 			}
 			else {
 				printf(REGISTRO_N_ENCONTRADO);
@@ -772,6 +776,54 @@ node_Btree_is *criar_no_is() {
 
 
 
+
+
+/* PSEUDOCÓDIGOS -> CÓDIGO ÁRVORE B */
+
+
+/* ==========================================
+   ================ BUSCA ===================
+   ========================================== */
+
+
+int buscar_btree_privado(int rrn, char *chave, int modo) {
+
+	node_Btree_ip *atual = read_btree_ip(rrn);
+	// imprimir_node_ip(atual);
+
+	int i = 0;
+	while (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) > 0) {
+		if (modo == 1)
+			if (i == atual->num_chaves-1)
+				printf("%s\n", atual->chave[i].pk);
+			else
+				printf("%s, ", atual->chave[i].pk);
+		i++;
+	}
+
+	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) == 0) {
+		if (modo == 1)
+			printf("%s\n", atual->chave[i].pk);
+		return atual->chave[i].rrn;
+	}
+
+	if (atual->folha == 'F')
+		return -1;
+	else 
+		return buscar_btree_privado(atual->desc[i], chave, modo);
+
+
+}
+int buscar_btree(Indice *ip, char *chave, int modo) {
+	return buscar_btree_privado(ip->raiz, chave, modo);
+}
+
+
+/* ==========================================
+   =============== PERCURSO =================
+   ========================================== */
+
+
 void pre_order_privado(int rrn) {
 	// printf("rrnAtual: %d\n", rrn);
 	if (rrn == -1)
@@ -789,42 +841,6 @@ void pre_order_privado(int rrn) {
 }
 void pre_order(Indice ip) {
 	pre_order_privado(ip.raiz);
-}
-
-
-/* PSEUDOCÓDIGOS -> CÓDIGO ÁRVORE B */
-
-
-/* ==========================================
-   ================ BUSCA ===================
-   ========================================== */
-
-
-int buscar_btree_privado(int rrn, char *chave) {
-
-	node_Btree_ip *atual = read_btree_ip(rrn);
-	// imprimir_node_ip(atual);
-
-	int i = 0;
-	while (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) > 0) {
-		// printf("chave atual: %s\n", atual->chave[i].pk);
-		i++;
-	}
-
-	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].pk) == 0) {
-		// printf("chave atual: %s\n", atual->chave[i].pk);
-		return rrn;
-	}
-
-	if (atual->folha == 'F')
-		return -1;
-	else 
-		return buscar_btree_privado(atual->desc[i], chave);
-
-
-}
-int buscar_btree(Indice *ip, char *chave) {
-	return buscar_btree_privado(ip->raiz, chave);
 }
 
 
