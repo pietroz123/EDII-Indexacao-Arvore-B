@@ -628,8 +628,10 @@ void buscar(Indice iprimary, Indice ibrand) {
 
 			resultadoBuscaIs = buscar_btree_is(&ibrand, string);
 			if (strcmp(resultadoBuscaIs, "-1")) {
-				//todo
-				printf("res: %s\n", resultadoBuscaIs);
+				// printf("res: %s\n", resultadoBuscaIs);	//!?!
+				resultadoBuscaIp = buscar_btree_ip(&iprimary, resultadoBuscaIs, 0);
+				printf("\n");
+				exibir_registro(resultadoBuscaIp);
 			}
 			else {
 				printf("\n");
