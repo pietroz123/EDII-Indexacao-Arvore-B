@@ -1440,7 +1440,7 @@ PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito) {
 	Y->num_chaves = (ordem_ip-1) / 2;
 
 	for (int j = Y->num_chaves-1; j >= 0; j--) {
-		if (!chave_alocada && strcmp(k.pk, X->chave[i].pk) > 0) {
+		if (!chave_alocada && strcmp(k.string, X->chave[i].string) > 0) {
 			Y->chave[j] = k;
 			Y->desc[j+1] = rrnDireito;
 			chave_alocada = 1; 
@@ -1454,7 +1454,7 @@ PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito) {
 
 
 	if (!chave_alocada) {
-		while (i >= 0 && strcmp(k.pk, X->chave[i].pk) < 0) {
+		while (i >= 0 && strcmp(k.string, X->chave[i].string) < 0) {
 			X->chave[i+1] = X->chave[i];
 			X->desc[i+2] = X->desc[i+1];
 			i--;
@@ -1508,7 +1508,7 @@ PromDirIs insere_aux_is(int rrnNo, Chave_is k) {
 		if (X->num_chaves < ordem_ip-1) {
 			i = X->num_chaves-1;
 
-			while (i >= 0 && strcmp(k.pk, X->chave[i].pk) < 0) {
+			while (i >= 0 && strcmp(k.string, X->chave[i].string) < 0) {
 				X->chave[i+1] = X->chave[i];
 				i--;
 			}
@@ -1532,7 +1532,7 @@ PromDirIs insere_aux_is(int rrnNo, Chave_is k) {
 	}
 	else {
 		i = X->num_chaves-1;
-		while (i >= 0 && strcmp(k.pk, X->chave[i].pk) < 0)
+		while (i >= 0 && strcmp(k.string, X->chave[i].string) < 0)
 			i--;
 		i++;
 
@@ -1544,7 +1544,7 @@ PromDirIs insere_aux_is(int rrnNo, Chave_is k) {
 				i = X->num_chaves-1;
 
 
-				while (i >= 0 && strcmp(k.pk, X->chave[i].pk) < 0) {
+				while (i >= 0 && strcmp(k.string, X->chave[i].string) < 0) {
 					X->chave[i+1] = X->chave[i];
 					X->desc[i+2] = X->desc[i+1];
 					i--;
