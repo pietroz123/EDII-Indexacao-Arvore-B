@@ -204,6 +204,9 @@ void insere_is(Indice *ip, Chave_is k);
 PromDirIs insere_aux_is(int rrnNo, Chave_is k);
 PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito);
 
+/* Atraves de um ARQUIVO inicial */
+
+void inserir_atraves_arquivo(Indice *iprimary, Indice *ibrand);
 
 
 /*
@@ -248,6 +251,11 @@ int main()
 	/* Índice secundário de nomes dos Produtos */
 	Indice ibrand;
 	criar_ibrand(&ibrand);
+
+
+	if (carregarArquivo == 1) {
+		inserir_atraves_arquivo(&iprimary, &ibrand);
+	}
 
 
 	/* Execução do programa */
@@ -526,6 +534,43 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 
 
 	nregistros++;
+
+
+}
+
+
+/**** INSERCAO POR ARQUIVO ****/
+
+void inserir_atraves_arquivo(Indice *iprimary, Indice *ibrand) {
+
+	for (int i = 0; i < nregistros; i++) {
+		Produto J = recuperar_registro(i);
+
+		Chave_ip kp;
+		strcpy(kp.pk, J.pk);
+		kp.rrn = i;
+
+
+		Chave_is ks;
+
+		char string[TAM_STRING_INDICE];
+		memset(string, 0, TAM_STRING_INDICE);
+		strcat(string, J.marca);
+		strcat(string, "$");
+		strcat(string, J.nome);	
+
+		int restantes = 101 - strlen(string);
+		for (int i = 0; i < restantes; i++)
+			strcat(string, "#");
+
+		strcpy(ks.pk, J.pk);
+		strcpy(ks.string, string);
+
+		insere_ip(iprimary, kp);
+		insere_is(ibrand, ks);
+
+
+	}
 
 
 }
