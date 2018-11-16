@@ -771,7 +771,10 @@ node_Btree_ip *read_btree_ip(int rrn) {
 
 
 	int i = 0;
-	char nChaves[4];	nChaves[0] = '\0';
+	char nChaves[4];
+	char chavePrimaria[TAM_PRIMARY_KEY];
+	char descendente[4];
+	char RRN[5];
 	char folha;								
 	char *r = temp;
 
@@ -779,7 +782,7 @@ node_Btree_ip *read_btree_ip(int rrn) {
 	node_Btree_ip *recuperar = criar_no_ip();
 
 	// Recupera o NÚMERO DE CHAVES
-	strncat(nChaves, r, 3);
+	snprintf(nChaves, 4, "%s", r);
 	recuperar->num_chaves = atoi(nChaves);
 	r += 3;
 	
@@ -787,14 +790,11 @@ node_Btree_ip *read_btree_ip(int rrn) {
 	// Recupera as CHAVES e RRNS
 	for (int n = 0; n < ordem_ip-1; n++) {
 
-		char chavePrimaria[TAM_PRIMARY_KEY];	chavePrimaria[0] = '\0';
-		char RRN[5];							RRN[0] = '\0';
-
-		strncat(chavePrimaria, r, 10);
+		snprintf(chavePrimaria, TAM_PRIMARY_KEY, "%s", r);
 		if (strcmp(chavePrimaria, "##########") != 0)
 			strcpy(recuperar->chave[n].pk, chavePrimaria);
 		r += 10;
-		strncat(RRN, r, 4);
+		snprintf(RRN, 5, "%s", r);
 		if (strcmp(RRN, "####") != 0)
 			recuperar->chave[n].rrn = atoi(RRN);
 		else
@@ -810,8 +810,7 @@ node_Btree_ip *read_btree_ip(int rrn) {
 	// Recupera os DESCENDENTES
 	for (int n = 0; n < ordem_ip; n++) {
 
-		char descendente[4];	descendente[0] = '\0';
-		strncat(descendente, r, 3);
+		snprintf(descendente, 4, "%s", r);
 		if (strcmp(descendente, "***"))
 			recuperar->desc[n] = atoi(descendente);
 		else
