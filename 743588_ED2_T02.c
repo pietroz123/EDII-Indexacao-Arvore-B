@@ -189,7 +189,8 @@ void libera_no_ip(node_Btree_ip *x);
 void libera_no_is(node_Btree_is *x);
 
 // Buscar na árvore
-int buscar_btree(Indice *ip, char *chave, int modo);
+int buscar_btree_ip(Indice *ip, char *chave, int modo);
+int buscar_btree_is(Indice *ip, char *chave);
 
 // Imprimir
 void pre_ordem(Indice ip);
@@ -531,7 +532,7 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 		insere_is(ibrand, ks);		
 	}
 	else {
-		int resultadoBusca = buscar_btree(iprimary, novo.pk, 0);
+		int resultadoBusca = buscar_btree_ip(iprimary, novo.pk, 0);
 		if (resultadoBusca == -1) {
 			insere_ip(iprimary, kp);
 			insere_is(ibrand, ks);
@@ -575,19 +576,22 @@ void buscar(Indice iprimary, Indice ibrand) {
 	scanf("%d", &opcaoBusca);
 	getchar();
 
-	char chave[TAM_PRIMARY_KEY];
-	scanf("%[^\n]s", chave);
-	getchar();
-
 	int resultadoBusca;
+	char chave[TAM_PRIMARY_KEY];
+
+	char marca[TAM_MARCA];
+	char nome[TAM_NOME];
 	
 	switch (opcaoBusca)
 	{
 		case 1:
+
+			scanf("%[^\n]s", chave);
+			getchar();
 			
 			printf(NOS_PERCORRIDOS_IP, chave);
 
-			resultadoBusca = buscar_btree(&iprimary, chave, 1);
+			resultadoBusca = buscar_btree_ip(&iprimary, chave, 1);
 			if (resultadoBusca != -1) {
 				printf("\n");
 				exibir_registro(resultadoBusca);
@@ -597,6 +601,40 @@ void buscar(Indice iprimary, Indice ibrand) {
 				printf(REGISTRO_N_ENCONTRADO);
 				return;
 			}
+
+			break;
+
+		case 2:
+
+			scanf("%[^\n]s", marca);
+			getchar();
+			scanf("%[^\n]s", nome);
+			getchar();
+
+			// Gera a string de busca
+			char string[TAM_STRING_INDICE];
+			memset(string, 0, TAM_STRING_INDICE);
+			strcat(string, marca);
+			strcat(string, "$");
+			strcat(string, nome);	
+
+			// Antes de preencher com '#'
+			printf(NOS_PERCORRIDOS_IS, string);
+
+			int restantes = 101 - strlen(string);
+			for (int i = 0; i < restantes; i++)
+				strcat(string, "#");
+
+			resultadoBusca = buscar_btree_is(&ibrand, string);
+			if (resultadoBusca != -1) {
+				//todo
+			}
+			else {
+				printf("\n");
+				printf(REGISTRO_N_ENCONTRADO);
+				return;
+			}
+
 
 			break;
 	
@@ -873,7 +911,7 @@ node_Btree_is *read_btree_is(int rrn) {
 	// Recupera os DESCENDENTES
 	for (int n = 0; n < ordem_is; n++) {
 
-		strncat(descendente, r, 3);
+		snprintf(descendente, 4, "%s", r);
 		if (strcmp(descendente, "***"))
 			recuperar->desc[n] = atoi(descendente);
 		else
@@ -956,6 +994,9 @@ node_Btree_is *criar_no_is() {
    ================ BUSCA ===================
    ========================================== */
 
+
+/* ========= BUSCA INDICE PRIMARIO - iprimary ========== */
+
 void imprimir_no_buscar_ip(node_Btree_ip *x) {
 	for (int i = 0; i < x->num_chaves; i++) {
 		if (i == x->num_chaves-1)
@@ -965,7 +1006,7 @@ void imprimir_no_buscar_ip(node_Btree_ip *x) {
 	}
 	printf("\n");
 }
-int buscar_btree_privado(int rrn, char *chave, int modo) {
+int buscar_btree_ip_privado(int rrn, char *chave, int modo) {
 
 	node_Btree_ip *atual = read_btree_ip(rrn);
 	if (modo == 1)
@@ -987,15 +1028,64 @@ int buscar_btree_privado(int rrn, char *chave, int modo) {
 		return -1;
 	}
 	else { 
-		int resultado = buscar_btree_privado(atual->desc[i], chave, modo);
+		int resultado = buscar_btree_ip_privado(atual->desc[i], chave, modo);
 		libera_no_ip(atual);
 		return resultado;
 	}
 
 
 }
-int buscar_btree(Indice *ip, char *chave, int modo) {
-	return buscar_btree_privado(ip->raiz, chave, modo);
+int buscar_btree_ip(Indice *ip, char *chave, int modo) {
+	return buscar_btree_ip_privado(ip->raiz, chave, modo);
+}
+
+
+
+/* ========= BUSCA INDICE SECUNDARIO - ibrand ========== */
+
+void imprimir_no_buscar_is(node_Btree_is *x) {
+	char *p;
+	for (int i = 0; i < x->num_chaves; i++) {
+		char string[TAM_STRING_INDICE];
+		strcpy(string, x->chave[i].string);
+		p = strtok(string, "#");
+		if (i == x->num_chaves-1)
+			printf("%s", p);
+		else
+			printf("%s, ", p);
+	}
+	printf("\n");
+}
+int buscar_btree_is_privado(int rrn, char *chave) {
+
+	node_Btree_is *atual = read_btree_is(rrn);
+	imprimir_no_buscar_is(atual);
+
+	int i = 0;
+	while (i < atual->num_chaves && strcmp(chave, atual->chave[i].string) > 0) {
+		printf("chave: %s\natual: %s\n", chave, atual->chave[i].string);
+		i++;
+	}
+
+	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].string) == 0) {
+		libera_no_is(atual);
+		return 1;
+	}
+
+	if (atual->folha == 'F') {
+		libera_no_is(atual);
+		return -1;
+	}
+	else { 
+		int resultado = buscar_btree_is_privado(atual->desc[i], chave);
+		libera_no_is(atual);
+		return resultado;
+	}
+
+
+}
+int buscar_btree_is(Indice *ip, char *chave) {
+	return buscar_btree_is_privado(ip->raiz, chave);
 }
 
 
