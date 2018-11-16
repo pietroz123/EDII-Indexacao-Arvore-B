@@ -168,23 +168,19 @@ void *b_tree_search(void *raiz, char *pk);
 
 
 // Escreve um nó da árvore no arquivo de índice. O terceiro parametro serve para informar qual indice se trata
-void write_btree(void *salvar, int rrn, char ip);
 void write_btree_ip(node_Btree_ip *salvar, int rrn);
 void write_btree_is(node_Btree_is *salvar, int rrn);
 
 // Lê um nó do arquivo de índice e retorna na estrutura
-void *read_btree(int rrn, char ip);
 node_Btree_ip *read_btree_ip(int rrn);
 node_Btree_is *read_btree_is(int rrn);
 
 // Aloca um nó de árvore para ser utilizado em memória primária, o primeiro parametro serve para informar que árvore se trata
 // É conveniente que essa função também inicialize os campos necessários com valores nulos
-void *criar_no(char ip);
 node_Btree_ip *criar_no_ip();
 node_Btree_is *criar_no_is();
 
 // Libera todos os campos dinâmicos do nó, inclusive ele mesmo
-void libera_no(void *node, char ip);
 void libera_no_ip(node_Btree_ip *x);
 void libera_no_is(node_Btree_is *x);
 
@@ -194,6 +190,7 @@ char *buscar_btree_is(Indice *ip, char *chave);
 
 // Imprimir
 void pre_ordem(Indice ip);
+void em_ordem(Indice ip);
 
 // Funções de inserção
 
@@ -323,29 +320,6 @@ int main()
 }
 
 
-//!DELETAR
-void imprimir_node_ip(node_Btree_ip *no) {
-	printf("%d\n", no->num_chaves);
-	for (int i = 0; i < ordem_ip-1; i++)
-		if (strlen(no->chave[i].pk) == 10)
-			printf("%s %d\n", no->chave[i].pk, no->chave[i].rrn);
-		else
-			printf("NULL %d\n", no->chave[i].rrn);
-	for (int i = 0; i < ordem_ip; i++)
-		printf("%d ", no->desc[i]);
-	printf("\n%c\n", no->folha);	
-}
-void imprimir_node_is(node_Btree_is *no) {
-	printf("%d\n", no->num_chaves);
-	for (int i = 0; i < ordem_is-1; i++)
-		if (strlen(no->chave[i].pk) == 10)
-			printf("%s %s\n", no->chave[i].pk, no->chave[i].string);
-		else
-			printf("NULL NULL\n", no->chave[i].string);
-	for (int i = 0; i < ordem_is; i++)
-		printf("%d ", no->desc[i]);
-	printf("\n%c\n", no->folha);	
-}
 
 
 /* ==========================================================================
@@ -455,14 +429,14 @@ void criar_ibrand(Indice *ibrand) { //todo
    ========================== FUNÇÕES DE COMPARAÇÃO ====================================
    ===================================================================================== */
 
-int comparacao_Ip(const void *a, const void *b) {
+int comparacao_Is(const void *a, const void *b) {
 
-	Chave_ip A = *(Chave_ip*)a;
-	Chave_ip B = *(Chave_ip*)b;
+	Chave_is A = *(Chave_is*)a;
+	Chave_is B = *(Chave_is*)b;
 
-	if (strcmp(A.pk, B.pk) == 0)
+	if (strcmp(A.string, B.string) == 0)
 		return 0;
-	else if (strcmp(A.pk, B.pk) > 0)
+	else if (strcmp(A.string, B.string) > 0)
 		return 1;
 	else
 		return -1;
@@ -553,10 +527,6 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 
 	nregistros++;
 
-	// printf("nregistros: %d\n", nregistros);  		//!?!
-	// printf("nregistrosip: %d\n", nregistrosip);  	//!?!
-	// printf("nregistrosis: %d\n", nregistrosis);  	//!?!
-	// printf("iprimary->raiz: %d\n", iprimary->raiz);	//!?!
 
 }
 
@@ -628,7 +598,6 @@ void buscar(Indice iprimary, Indice ibrand) {
 
 			resultadoBuscaIs = buscar_btree_is(&ibrand, string);
 			if (strcmp(resultadoBuscaIs, "-1")) {
-				// printf("res: %s\n", resultadoBuscaIs);	//!?!
 				resultadoBuscaIp = buscar_btree_ip(&iprimary, resultadoBuscaIs, 0);
 				printf("\n");
 				exibir_registro(resultadoBuscaIp);
@@ -669,6 +638,17 @@ void listar(Indice iprimary, Indice ibrand) {
 
 			pre_ordem(iprimary);
 
+			break;
+
+		case 2:
+
+			if (ibrand.raiz == -1) {
+				printf(REGISTRO_N_ENCONTRADO);
+				return;
+			}
+
+			em_ordem(ibrand);
+
 
 
 			break;
@@ -686,10 +666,6 @@ void listar(Indice iprimary, Indice ibrand) {
 
 
 /* Escreve um nó da árvore no arquivo de índice. O terceiro parametro serve para informar qual indice se trata */
-void write_btree(void *salvar, int rrn, char ip) {
-
-
-}
 
 
 // Sobrescreve o registro de um nó na posição do RRN do Arquivo de Índices Primários
@@ -802,10 +778,6 @@ void write_btree_is(node_Btree_is *salvar, int rrn) {
 
 
 /* Lê um nó do arquivo de índice e retorna na estrutura*/
-void *read_btree(int rrn, char ip) {
-
-
-}
 
 node_Btree_ip *read_btree_ip(int rrn) {
 
@@ -932,9 +904,6 @@ node_Btree_is *read_btree_is(int rrn) {
 
 // Aloca um nó de árvore para ser utilizado em memória primária, o primeiro parametro serve para informar que árvore se trata
 // É conveniente que essa função também inicialize os campos necessários com valores nulos
-void *criar_no(char ip) {
-
-}
 
 node_Btree_ip *criar_no_ip() {
 	
@@ -1067,7 +1036,6 @@ char *buscar_btree_is_privado(int rrn, char *chave) {
 
 	int i = 0;
 	while (i < atual->num_chaves && strcmp(chave, atual->chave[i].string) > 0) {
-		// printf("chave: %s\natual: %s\n", chave, atual->chave[i].string);
 		i++;
 	}
 
@@ -1097,6 +1065,8 @@ char *buscar_btree_is(Indice *ip, char *chave) {
    =============== PERCURSO =================
    ========================================== */
 
+
+/*  == PERCURSO INDICE PRIMARIO - iprimary == */
 
 void imprimir_no_listar_ip(node_Btree_ip *x, int nivel) {
 	for (int i = 0; i < x->num_chaves; i++) {
@@ -1133,17 +1103,86 @@ void pre_ordem(Indice ip) {
 }
 
 
+/*  == PERCURSO INDICE SECUNDARIO - ibrand == */
+
+void em_ordem_privado(int rrn, Chave_is *vetor, int *cont) {
+
+	if (rrn == -1)
+		return;
+
+	node_Btree_is *atual = read_btree_is(rrn);
+
+	for (int i = 0; i <= atual->num_chaves; i++) {
+		if (i < atual->num_chaves) {
+			vetor[*cont] = atual->chave[i];
+			*cont += 1;
+		}
+		em_ordem_privado(atual->desc[i], vetor, cont);
+	}
+
+	libera_no_is(atual);
+
+}
+void em_ordem(Indice ip) {
+
+	Chave_is *vetor = (Chave_is*) malloc(MAX_REGISTROS * sizeof(Chave_is));
+	int i = 0;
+
+	em_ordem_privado(ip.raiz, vetor, &i);
+
+	char *p;
+	char string[TAM_STRING_INDICE];
+
+	// Ordena o vetor em ordem lexicografica da STRING
+	qsort(vetor, i, sizeof(Chave_is), comparacao_Is);
+
+	// Lista MARCA e NOME formatados
+	for (int j = 0; j < i; j++) {
+
+		// Tokeniza ate '#'
+		strcpy(string, vetor[j].string);
+		p = strtok(string, "#");
+		
+		// Ponteiro auxiliar para "mascarar" um '$' adicional
+		char *s = p;
+		while (*s != '\0')
+			s += 1;
+		*s = '$';
+
+		// Tokeniza marca e nome
+		p = strtok(string, "$");
+		int cont = 0;
+		while (p != NULL && cont != 2) {
+			
+			cont++;
+
+			// Imprime a MARCA quando cont = 1 e o NOME quando cont = 2
+			printf("%s", p);
+
+			// Completa os espaços restantes com '-'
+			int necessarios = 50 - strlen(p);
+			for (int i = 0; i < necessarios; i++)
+				printf("-");
+
+			// Adiciona um espaco entre MARCA e NOME
+			if (cont == 1)
+				printf(" ");
+
+			// Vai para o proximo
+			p = strtok(NULL, "$");
+		}
+		printf("\n");
+		
+	}
+
+	free(vetor);
+
+}
+
 /* ==========================================
    =============== INSERÇÃO =================
    ========================================== */
 
-
-
-void imprime_prom_dir_ip(PromDirIp atual) {
-	printf("atual.chavePromovida.pk: %s\n", atual.chave_promovida.pk);
-	printf("atual.chave_promovida.rrn: %d\n", atual.chave_promovida.pk);
-	printf("atual.filhoDireito: %d\n", atual.filhoDireito);
-}
 
 
 /* =========================================================== 
@@ -1153,12 +1192,9 @@ void imprime_prom_dir_ip(PromDirIp atual) {
 
 PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 
-	// printf("rrnNo: %d\nrrnDireito: %d\n", rrnNo, rrnDireito);   //!?!
 	
 	node_Btree_ip *X = read_btree_ip(rrnNo);
 	
-	// printf("X:\n");   //!?!
-	// imprimir_node_ip(X);   //!?!
 
 	
 	int i = X->num_chaves-1;
@@ -1167,8 +1203,6 @@ PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 	node_Btree_ip *Y = criar_no_ip();
 	Y->folha = X->folha;
 	Y->num_chaves = (ordem_ip-1) / 2;
-	// printf("Criou Y:\n");   //!?!
-	// imprimir_node_ip(Y);   //!?!
 
 	for (int j = Y->num_chaves-1; j >= 0; j--) {
 		if (!chave_alocada && strcmp(k.pk, X->chave[i].pk) > 0) {
@@ -1183,11 +1217,6 @@ PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 		}
 	}
 
-	// printf("Apos MOVIMENTACAO:\n");   //!?!
-	// printf("X:\n");   //!?!
-	// imprimir_node_ip(X);   //!?!
-	// printf("Y:\n");   //!?!
-	// imprimir_node_ip(Y);   //!?!
 
 	if (!chave_alocada) {
 		while (i >= 0 && strcmp(k.pk, X->chave[i].pk) < 0) {
@@ -1199,11 +1228,6 @@ PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 		X->desc[i+2] = rrnDireito;
 	}
 
-	// printf("Apos LIBERACAO:\n");   //!?!
-	// printf("X:\n");   //!?!
-	// imprimir_node_ip(X);   //!?!
-	// printf("Y:\n");   //!?!
-	// imprimir_node_ip(Y);   //!?!
 
 	Chave_ip chave_promovida;								// Promove a chave mediana
 	chave_promovida = X->chave[(ordem_ip/2)];
@@ -1227,11 +1251,6 @@ PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 	X->chave[(ordem_ip/2)].rrn = -1;
 	
 
-	// printf("Apos PROMOCAO:\n");   //!?!
-	// printf("X:\n");   //!?!
-	// imprimir_node_ip(X);   //!?!
-	// printf("Y:\n");   //!?!
-	// imprimir_node_ip(Y);   //!?!
 
 
 	write_btree_ip(X, rrnNo);
@@ -1241,15 +1260,6 @@ PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 	libera_no_ip(Y);
 
 
-	// char *p;   //!?!
-	// if (!*ARQUIVO_IP)   //!?!
-		// puts(ARQUIVO_VAZIO);   //!?!
-	// else   //!?!
-		// for (p = ARQUIVO_IP; *p != '\0'; p += tamanho_registro_ip)   //!?!
-		// {   //!?!
-			// fwrite(p, 1, tamanho_registro_ip, stdout);   //!?!
-			// puts("");   //!?!
-		// }   //!?!
 	nregistrosip++;
 
 	return retorno;
@@ -1259,12 +1269,9 @@ PromDirIp insere_aux_ip(int rrnNo, Chave_ip k) {
 
 	int i;
 	node_Btree_ip *X = read_btree_ip(rrnNo);
-	// imprimir_node_ip(X);   //!?!
 	
 	if (X->folha == 'F') {
-		// printf("X eh folha\n");   //!?!
 		if (X->num_chaves < ordem_ip-1) {
-			// printf("Existe espaco\n");   //!?!
 			i = X->num_chaves-1;
 
 			while (i >= 0 && strcmp(k.pk, X->chave[i].pk) < 0) {
@@ -1273,14 +1280,11 @@ PromDirIp insere_aux_ip(int rrnNo, Chave_ip k) {
 			}
 			X->chave[i+1] = k;
 			X->num_chaves++;
-			// printf("Feita a alteracao em X\n");   //!?!
-			// imprimir_node_ip(X);   //!?!
 
 			PromDirIp r;
 			memset(r.chave_promovida.pk, 0, sizeof(r.chave_promovida.pk));
 			r.chave_promovida.rrn = -1;
 			r.filhoDireito = -1;
-			// imprime_prom_dir_ip(r);   //!?!
 
 			write_btree_ip(X, rrnNo);
 			libera_no_ip(X);
@@ -1288,34 +1292,23 @@ PromDirIp insere_aux_ip(int rrnNo, Chave_ip k) {
 			return r; // return NULL, NULL
 		} 
 		else {
-			// printf("Nao existe espaco. Vai dividir\n");   //!?!
 			libera_no_ip(X);
 			return divide_no_ip(rrnNo, k, -1);
 		} 	
 	}
 	else {
-		// printf("X nao eh folha\n");   //!?!
 		i = X->num_chaves-1;
 		while (i >= 0 && strcmp(k.pk, X->chave[i].pk) < 0)
 			i--;
 		i++;
 
-		// printf("Vai chamar insere_aux_ip\n");   //!?!
 		PromDirIp atual = insere_aux_ip(X->desc[i], k);
-		// printf("Chamou insere_aux_ip\n");   //!?!
-		// imprime_prom_dir_ip(atual);   //!?!
 
 		if (strlen(atual.chave_promovida.pk)) {
-			// printf("Houve overflow\n");   //!?!
 			k = atual.chave_promovida;
-			// printf("Como esta X:\n");   //!?!
-			// imprimir_node_ip(X);   //!?!
 			if (X->num_chaves < ordem_ip-1) {
-				// printf("Existe espaco\n");   //!?!
 				i = X->num_chaves-1;
 
-				// printf("X antes da movimentacao:\n");   //!?!
-				// imprimir_node_ip(X);   //!?!
 
 				while (i >= 0 && strcmp(k.pk, X->chave[i].pk) < 0) {
 					X->chave[i+1] = X->chave[i];
@@ -1323,22 +1316,16 @@ PromDirIp insere_aux_ip(int rrnNo, Chave_ip k) {
 					i--;
 				}
 
-				// printf("Como esta X apos movimentacao:\n");   //!?!
-				// imprimir_node_ip(X);   //!?!
 
 				X->chave[i+1] = k;
 				X->desc[i+2] = atual.filhoDireito;
 				X->num_chaves++;
 
-				// printf("X apos insercao:\n");   //!?!
-				// imprimir_node_ip(X);   //!?!
 
 				PromDirIp r;
 				memset(r.chave_promovida.pk, 0, sizeof(r.chave_promovida.pk));
 				r.chave_promovida.rrn = -1;
 				r.filhoDireito = -1;
-				// printf("retorno:\n");   //!?!
-				// imprime_prom_dir_ip(r);   //!?!
 
 				write_btree_ip(X, rrnNo);
 				libera_no_ip(X);
@@ -1346,20 +1333,16 @@ PromDirIp insere_aux_ip(int rrnNo, Chave_ip k) {
 				return r; // return NULL, NULL
 			}
 			else {
-				// printf("Nao existe espaco. Vai dividir.\n");   //!?!
 				// Não há espaço, portanto realizamos um split
 				libera_no_ip(X);
 				return divide_no_ip(rrnNo, k, atual.filhoDireito);
 			}
 		}
 		else {
-			// printf("Nao houve overflow\n");   //!?!
 			PromDirIp r;
 			memset(r.chave_promovida.pk, 0, sizeof(r.chave_promovida.pk));
 			r.chave_promovida.rrn = -1;
 			r.filhoDireito = -1;
-			// printf("retorno:\n");   //!?!
-			// imprime_prom_dir_ip(r);   //!?!
 
 			libera_no_ip(X);
 			
@@ -1373,10 +1356,8 @@ PromDirIp insere_aux_ip(int rrnNo, Chave_ip k) {
 
 void insere_ip(Indice *ip, Chave_ip k) {
 
-	// printf("------ Vai inserir '%s' ------\n", k.pk);   //!?!
 
 	if (ip->raiz == -1) {
-		// printf("ip->raiz == -1\n");   //!?!
 		node_Btree_ip *X = criar_no_ip();
 		X->folha = 'F';
 		X->num_chaves = 1;
@@ -1390,15 +1371,9 @@ void insere_ip(Indice *ip, Chave_ip k) {
 		nregistrosip++;
 	}
 	else {
-		// printf("ip->raiz != -1 => %d\n", ip->raiz);   //!?!
-		// printf("Primeira chamada do insere_aux_ip em insere_ip\n");   //!?!
 		PromDirIp atual = insere_aux_ip(ip->raiz, k);
-		// printf("Voltou para insere_ip()\n");   //!?!
-		// printf("Retorno:\n");   //!?!
-		// imprime_prom_dir_ip(atual);   //!?!
 
 		if (strlen(atual.chave_promovida.pk)) {
-			// printf("Ocorreu overflow na raiz. Vai criar uma nova\n");   //!?!
 			node_Btree_ip *X = criar_no_ip();
 			X->folha = 'N';
 			X->num_chaves = 1;
@@ -1415,7 +1390,6 @@ void insere_ip(Indice *ip, Chave_ip k) {
 			nregistrosip++;
 		}
 		else {
-			// printf("Nao ocorreu overflow\n");   //!?!
 		}
 
 	}
