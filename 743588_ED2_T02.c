@@ -602,9 +602,19 @@ void buscar(Indice iprimary, Indice ibrand) {
 	{
 		case 1:
 
+
 			scanf("%[^\n]s", chave);
 			getchar();
 			
+			// Caso não exista nenhum registro
+			if (iprimary.raiz == -1) {
+				printf(NOS_PERCORRIDOS_IP, chave);
+				printf("\n");
+				printf(REGISTRO_N_ENCONTRADO);
+				return;
+			}
+
+
 			printf(NOS_PERCORRIDOS_IP, chave);
 
 			resultadoBuscaIp = buscar_btree_ip(&iprimary, chave, 1);
@@ -622,6 +632,7 @@ void buscar(Indice iprimary, Indice ibrand) {
 
 		case 2:
 
+
 			scanf("%[^\n]s", marca);
 			getchar();
 			scanf("%[^\n]s", nome);
@@ -633,6 +644,14 @@ void buscar(Indice iprimary, Indice ibrand) {
 			strcat(string, marca);
 			strcat(string, "$");
 			strcat(string, nome);	
+			
+			// Caso não exista nenhum produto
+			if (ibrand.raiz == -1) {
+				printf(NOS_PERCORRIDOS_IS, string);
+				printf("\n");
+				printf(REGISTRO_N_ENCONTRADO);
+				return;
+			}
 
 			// Antes de preencher com '#'
 			printf(NOS_PERCORRIDOS_IS, string);
@@ -1229,6 +1248,12 @@ void em_ordem(Indice ip) {
    ========================================== */
 
 
+void imprime_prom_dir_ip(PromDirIp atual) {
+	printf("atual.chavePromovida.pk: %s\n", atual.chave_promovida.pk);
+	printf("atual.chave_promovida.rrn: %d\n", atual.chave_promovida.pk);
+	printf("atual.filhoDireito: %d\n", atual.filhoDireito);
+}
+
 
 /* =========================================================== 
    ===== INSERÇÃO ÁRVORE DE ÍNDICES PRIMÁRIOS - iprimary ===== 
@@ -1453,14 +1478,13 @@ PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito) {
 	
 	node_Btree_is *X = read_btree_is(rrnNo);
 	
-
 	
 	int i = X->num_chaves-1;
 	int chave_alocada = 0;
 
 	node_Btree_is *Y = criar_no_is();
 	Y->folha = X->folha;
-	Y->num_chaves = (ordem_ip-1) / 2;
+	Y->num_chaves = (ordem_is-1) / 2;
 
 	for (int j = Y->num_chaves-1; j >= 0; j--) {
 		if (!chave_alocada && strcmp(k.string, X->chave[i].string) > 0) {
@@ -1476,6 +1500,7 @@ PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito) {
 	}
 
 
+
 	if (!chave_alocada) {
 		while (i >= 0 && strcmp(k.string, X->chave[i].string) < 0) {
 			X->chave[i+1] = X->chave[i];
@@ -1487,11 +1512,12 @@ PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito) {
 	}
 
 
-	Chave_is chave_promovida;								// Promove a chave mediana
-	chave_promovida = X->chave[(ordem_ip/2)];
 
-	Y->desc[0] = X->desc[(ordem_ip/2)+1];					
-	X->num_chaves = (ordem_ip / 2);							// O número de chaves é reduzido pela metade
+	Chave_is chave_promovida;								// Promove a chave mediana
+	chave_promovida = X->chave[(ordem_is/2)];
+
+	Y->desc[0] = X->desc[(ordem_is/2)+1];					
+	X->num_chaves = (ordem_is / 2);							// O número de chaves é reduzido pela metade
 
 
 	PromDirIs retorno;
@@ -1499,13 +1525,13 @@ PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito) {
 	retorno.filhoDireito = nregistrosis;
 
 	// Zera os descendentes remanescentes
-	if (X->num_chaves < ordem_ip) {
-		for (int i = ordem_ip-1; i > X->num_chaves; i--)
+	if (X->num_chaves < ordem_is) {
+		for (int i = ordem_is-1; i > X->num_chaves; i--)
 			X->desc[i] = -1;
 	}
 	
 	// Zera a posicao que contem a chave promovida
-	memset(X->chave[(ordem_ip/2)].pk, 0, sizeof(X->chave[(ordem_ip/2)].pk));
+	memset(X->chave[(ordem_is/2)].pk, 0, sizeof(X->chave[(ordem_is/2)].pk));
 	memset(X->chave[(ordem_is/2)].string, 0, TAM_STRING_INDICE);
 	
 
@@ -1528,7 +1554,7 @@ PromDirIs insere_aux_is(int rrnNo, Chave_is k) {
 	node_Btree_is *X = read_btree_is(rrnNo);
 	
 	if (X->folha == 'F') {
-		if (X->num_chaves < ordem_ip-1) {
+		if (X->num_chaves < ordem_is-1) {
 			i = X->num_chaves-1;
 
 			while (i >= 0 && strcmp(k.string, X->chave[i].string) < 0) {
@@ -1563,7 +1589,7 @@ PromDirIs insere_aux_is(int rrnNo, Chave_is k) {
 
 		if (strlen(atual.chave_promovida.pk)) {
 			k = atual.chave_promovida;
-			if (X->num_chaves < ordem_ip-1) {
+			if (X->num_chaves < ordem_is-1) {
 				i = X->num_chaves-1;
 
 
