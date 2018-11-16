@@ -334,6 +334,17 @@ void imprimir_node_ip(node_Btree_ip *no) {
 		printf("%d ", no->desc[i]);
 	printf("\n%c\n", no->folha);	
 }
+void imprimir_node_is(node_Btree_is *no) {
+	printf("%d\n", no->num_chaves);
+	for (int i = 0; i < ordem_is-1; i++)
+		if (strlen(no->chave[i].pk) == 10)
+			printf("%s %s\n", no->chave[i].pk, no->chave[i].string);
+		else
+			printf("NULL NULL\n", no->chave[i].string);
+	for (int i = 0; i < ordem_is; i++)
+		printf("%d ", no->desc[i]);
+	printf("\n%c\n", no->folha);	
+}
 
 
 /* ==========================================================================
@@ -512,16 +523,7 @@ void cadastrar(Indice *iprimary, Indice *ibrand) {
 
 	strcpy(ks.pk, novo.pk);
 	strcpy(ks.string, string);
-
-	//!DELETAR
-	node_Btree_is *teste = criar_no_is();
-	teste->num_chaves = 2;
-	strcpy(teste->chave[0].pk, novo.pk);
-	strcpy(teste->chave[0].string, string);
-	strcpy(teste->chave[1].pk, "MOLO301217");
-	strcpy(teste->chave[1].string, "LOGITECH$MOUSE GAMER 12000DPI########################################################################");
-	write_btree_is(teste, 0);
-
+	
 
 
 	if (iprimary->raiz == -1) {
@@ -825,6 +827,61 @@ node_Btree_ip *read_btree_ip(int rrn) {
 
 node_Btree_is *read_btree_is(int rrn) {
 
+	// Recupera o registro e armazena em temp
+	char temp[tamanho_registro_is+1], *p;
+	temp[tamanho_registro_is] = '\0';
+	strncpy(temp, ARQUIVO_IS + ((rrn)*tamanho_registro_is), tamanho_registro_is);
+
+
+	int i = 0;
+	char nChaves[4];
+	char chavePrimaria[TAM_PRIMARY_KEY];
+	char string[TAM_STRING_INDICE];
+	char descendente[4];
+	char folha;								
+	char *r = temp;
+
+	// Cria um nó
+	node_Btree_is *recuperar = criar_no_is();
+
+	// Recupera o NÚMERO DE CHAVES
+	snprintf(nChaves, 4, "%s", r);
+	recuperar->num_chaves = atoi(nChaves);
+	r += 3;
+	
+
+	// Recupera as CHAVES e STRINGS
+	for (int n = 0; n < ordem_is-1; n++) {
+
+		snprintf(chavePrimaria, TAM_PRIMARY_KEY, "%s", r);
+		if (strcmp(chavePrimaria, "##########") != 0)
+			strcpy(recuperar->chave[n].pk, chavePrimaria);
+		r += 10;
+		snprintf(string, TAM_STRING_INDICE, "%s", r);
+		if (strcmp(string, "#####################################################################################################") != 0)
+			strcpy(recuperar->chave[n].string, string);
+		r += 101;
+
+	}
+	
+	// Recupera FOLHA ou NÃO
+	recuperar->folha = *r;
+	r += 1;
+
+	// Recupera os DESCENDENTES
+	for (int n = 0; n < ordem_is; n++) {
+
+		strncat(descendente, r, 3);
+		if (strcmp(descendente, "***"))
+			recuperar->desc[n] = atoi(descendente);
+		else
+			recuperar->desc[n] = -1;
+		if (n < ordem_is-1)
+			r += 3;
+
+	}
+
+	return recuperar;
 
 }
 
