@@ -334,23 +334,6 @@ int carregar_arquivo()
 	return strlen(ARQUIVO) / TAM_REGISTRO;
 }
 
-/* Gera a chave primária */
-void gerar_chave(Produto *P) {
-    P->pk[0] = '\0';                // Garante que os dados serão concatenados corretamente na chave primária
-    strncat(P->pk, P->nome, 2);     // N1N2 
-    strncat(P->pk, P->marca, 2);    // M1M2
- 
-    char *dAux;                     // DDMM
-    char dataAux[11];               // Cria uma string dataAux para não perder o valor da data original com o strtok
-    strcpy(dataAux, P->data);
-    dAux = strtok(dataAux, "/");    // DD
-    strncat(P->pk, dAux, 2);
-    dAux = strtok(NULL, "/");       // MM
-    strncat(P->pk, dAux, 2);
-    
-    strncat(P->pk, P->ano, 2);      // AL
-}
-
 /* Recupera o registro no ARQUIVO de dados e retorna os dados na struct Produto */
 Produto recuperar_registro(int rrn)
 {
@@ -449,6 +432,23 @@ int comparacao_Is(const void *a, const void *b) {
    ===================================================================================== */
 
 /**** INSERÇÃO ****/ //todo
+
+/* Gera a chave primária */
+void gerar_chave(Produto *P) {
+    P->pk[0] = '\0';                // Garante que os dados serão concatenados corretamente na chave primária
+    strncat(P->pk, P->nome, 2);     // N1N2 
+    strncat(P->pk, P->marca, 2);    // M1M2
+ 
+    char *dAux;                     // DDMM
+    char dataAux[11];               // Cria uma string dataAux para não perder o valor da data original com o strtok
+    strcpy(dataAux, P->data);
+    dAux = strtok(dataAux, "/");    // DD
+    strncat(P->pk, dAux, 2);
+    dAux = strtok(NULL, "/");       // MM
+    strncat(P->pk, dAux, 2);
+    
+    strncat(P->pk, P->ano, 2);      // AL
+}
 
 void ler_entrada(Produto *novo) {
     scanf("%[^\n]s", novo->nome);
