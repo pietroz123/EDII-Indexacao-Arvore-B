@@ -1149,8 +1149,10 @@ char *buscar_btree_is_privado(int rrn, char *chave) {
 	}
 
 	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].string) == 0) {
+		char resultado[TAM_PRIMARY_KEY];
+		strcpy(resultado, atual->chave[i].pk);
 		libera_no_is(atual);
-		return atual->chave[i].pk;
+		return resultado;
 	}
 
 	if (atual->folha == 'F') {
