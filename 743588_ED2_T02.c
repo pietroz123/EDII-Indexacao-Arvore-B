@@ -1149,7 +1149,7 @@ char *buscar_btree_is_privado(int rrn, char *chave) {
 	}
 
 	if (i < atual->num_chaves && strcmp(chave, atual->chave[i].string) == 0) {
-		char resultado[TAM_PRIMARY_KEY];
+		char *resultado;
 		strcpy(resultado, atual->chave[i].pk);
 		libera_no_is(atual);
 		return resultado;
@@ -1357,8 +1357,15 @@ PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
 	retorno.chave_promovida = chave_promovida;
 	retorno.filhoDireito = nregistrosip;
 
-	// Zera os descendentes remanescentes
-	if (X->num_chaves < ordem_ip) {
+
+	// Conta o número de descendentes
+	int n_desc = 0;
+	for (int i = 0; i <= ordem_ip-1; i++)
+		if (X->desc[i] != -1)
+			n_desc++;
+
+	// Se o número de descendentes é maior que o número suportado por X->num_chaves, zera os descendentes remanescentes
+	if (X->num_chaves < n_desc-1) {
 		for (int i = ordem_ip-1; i > X->num_chaves; i--)
 			X->desc[i] = -1;
 	}
