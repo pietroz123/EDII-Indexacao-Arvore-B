@@ -271,10 +271,12 @@ int main()
 
 		case 2: /* Alterar o desconto de um Produto */
 			printf(INICIO_ALTERACAO);
+			
 			if (alterar(iprimary))
 				printf(SUCESSO);
 			else
 				printf(FALHA);
+			
 			break;
 		
 		case 3: /* Buscar um Produto */
@@ -407,11 +409,11 @@ int exibir_registro(int rrn)
    ========================== CRIAÇÃO DOS INDICES ======================================
    ===================================================================================== */
 
-void criar_iprimary(Indice *iprimary) { //todo
+void criar_iprimary(Indice *iprimary) {
 	iprimary->raiz = -1;
 }
 
-void criar_ibrand(Indice *ibrand) { //todo
+void criar_ibrand(Indice *ibrand) {
 	ibrand->raiz = -1;
 }
 
@@ -439,7 +441,7 @@ int comparacao_Is(const void *a, const void *b) {
    ======================== INTERAÇÃO COM O USUÁRIO ====================================
    ===================================================================================== */
 
-/**** INSERÇÃO ****/ //todo
+/**** INSERÇÃO ****/
 
 /* Gera a chave primária */
 void gerar_chave(Produto *P) {
@@ -576,14 +578,60 @@ void inserir_atraves_arquivo(Indice *iprimary, Indice *ibrand) {
 }
 
 
-/**** ALTERAÇÃO ****/ //todo
+/**** ALTERAÇÃO ****/
 
 int alterar(Indice iprimary) {
+
+	char chave[TAM_PRIMARY_KEY];
+	char novoDesconto[TAM_DESCONTO];
+
+	// Recebe a chave primária
+	scanf("%[^\n]s", chave);
+	getchar();
+
+	// Busca se existe a chave primária
+	int resultadoBusca;
+	resultadoBusca = buscar_btree_ip(&iprimary, chave, 0);
+	if (resultadoBusca == -1) {
+		printf(REGISTRO_N_ENCONTRADO);
+		return 0;
+	}
+
+	// Recebe o novo desconto
+	scanf("%[^\n]s", novoDesconto);
+	getchar();
+
+
+	// Verifica se o novo desconto é válido (está entre 0 e 100), caso contrário pede novamente
+	while (strcmp(novoDesconto, "100") > 0 || strcmp(novoDesconto, "000") <= 0) {
+		printf(CAMPO_INVALIDO);
+		scanf("%[^\n]s", novoDesconto);
+		getchar();
+	}
+
+	// Altera o desconto no ARQUIVO
+	char *p = ARQUIVO + 192*resultadoBusca;
+
+	int arr = 0;
+	while (*p && arr < 6) {
+		if (*p == '@')
+			arr++;
+		p++;
+	}
+
+	// Altera o desconto
+	*p = novoDesconto[0];
+	p++;
+	*p = novoDesconto[1];
+	p++;
+	*p = novoDesconto[2];
+
+	return 1;
 
 }
 
 
-/**** BUSCA ****/ //todo
+/**** BUSCA ****/
 
 void buscar(Indice iprimary, Indice ibrand) {
 
@@ -682,7 +730,7 @@ void buscar(Indice iprimary, Indice ibrand) {
 }
 
 
-/**** LISTAGEM ****/ //todo
+/**** LISTAGEM ****/
 
 void listar(Indice iprimary, Indice ibrand) {
 
@@ -727,9 +775,6 @@ void listar(Indice iprimary, Indice ibrand) {
 /* =====================================================================================
    ================================ FUNÇÕES ÁRVORE-B ===================================
    ===================================================================================== */
-
-
-/* Escreve um nó da árvore no arquivo de índice. O terceiro parametro serve para informar qual indice se trata */
 
 
 // Sobrescreve o registro de um nó na posição do RRN do Arquivo de Índices Primários
