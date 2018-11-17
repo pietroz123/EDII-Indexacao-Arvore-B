@@ -1419,7 +1419,7 @@ PromDirIp insere_aux_ip(int rrnNo, Chave_ip k) {
 
 		PromDirIp atual = insere_aux_ip(X->desc[i], k);
 
-		if (strlen(atual.chave_promovida.pk)) {
+		if (atual.chave_promovida.rrn != -1) {
 			k = atual.chave_promovida;
 			if (X->num_chaves < ordem_ip-1) {
 				i = X->num_chaves-1;
@@ -1488,7 +1488,7 @@ void insere_ip(Indice *ip, Chave_ip k) {
 	else {
 		PromDirIp atual = insere_aux_ip(ip->raiz, k);
 
-		if (strlen(atual.chave_promovida.pk)) {
+		if (atual.chave_promovida.rrn != -1) {
 			node_Btree_ip *X = criar_no_ip();
 			X->folha = 'N';
 			X->num_chaves = 1;
