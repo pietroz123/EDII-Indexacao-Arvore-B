@@ -1579,15 +1579,24 @@ PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito) {
     retorno.chave_promovida = chave_promovida;
     retorno.filhoDireito = nregistrosis;
  
-    // Zera os descendentes remanescentes
-    if (X->num_chaves < ordem_is) {
-        for (int i = ordem_is-1; i > X->num_chaves; i--)
-            X->desc[i] = -1;
-    }
-    
-    // Zera a posicao que contem a chave promovida
-    memset(X->chave[(ordem_is/2)].pk, 0, sizeof(X->chave[(ordem_is/2)].pk));
-    memset(X->chave[(ordem_is/2)].string, 0, TAM_STRING_INDICE);
+
+	// Conta o número de descendentes
+	int n_desc = 0;
+	for (int i = 0; i <= ordem_is-1; i++)
+		if (X->desc[i] != -1)
+			n_desc++;
+
+	// Se o número de descendentes é maior que o número suportado por X->num_chaves, zera os descendentes remanescentes
+	if (X->num_chaves < n_desc-1) {
+		for (int i = ordem_is-1; i > X->num_chaves; i--)
+			X->desc[i] = -1;
+	}
+	
+	// Zera a posicao que contem a chave promovida, e as seguintes
+	for (int i = (ordem_is/2); i <= ordem_is-2; i++) {
+		memset(X->chave[i].pk, 0, sizeof(X->chave[i].pk));
+		memset(X->chave[i].string, 0, TAM_STRING_INDICE);
+	}
     
  
  
