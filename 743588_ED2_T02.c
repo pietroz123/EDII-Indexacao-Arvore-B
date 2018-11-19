@@ -5,8 +5,8 @@
  *
  * Trabalho 02 - Árvore B
  *
- * RA:         743588
- * Aluno:    Pietro Zuntini Bonfim 
+ * RA: 		743588
+ * Aluno:	Pietro Zuntini Bonfim
  * ========================================================================== */
  
 /* Bibliotecas */
@@ -16,45 +16,45 @@
 #include <string.h>
  
 /* Tamanho dos campos dos registros */
-#define TAM_PRIMARY_KEY             11
-#define TAM_NOME                     51
-#define TAM_MARCA                     51
-#define TAM_DATA                     11
-#define TAM_ANO                     3
-#define TAM_PRECO                     8
-#define TAM_DESCONTO                 4
-#define TAM_CATEGORIA                 51
-#define TAM_STRING_INDICE             (TAM_MARCA + TAM_NOME)
+#define TAM_PRIMARY_KEY 			11
+#define TAM_NOME 					51
+#define TAM_MARCA 					51
+#define TAM_DATA 					11
+#define TAM_ANO 					3
+#define TAM_PRECO 					8
+#define TAM_DESCONTO 				4
+#define TAM_CATEGORIA 				51
+#define TAM_STRING_INDICE 			(TAM_MARCA + TAM_NOME)
  
-#define TAM_REGISTRO                 192
-#define MAX_REGISTROS                 1000
-#define MAX_ORDEM                     150
-#define TAM_ARQUIVO                 (MAX_REGISTROS * TAM_REGISTRO + 1)
- 
+#define TAM_REGISTRO 				192
+#define MAX_REGISTROS 				1000
+#define MAX_ORDEM 					150
+#define TAM_ARQUIVO 				(MAX_REGISTROS * TAM_REGISTRO + 1)
+
 /* Saídas do usuário */
-#define OPCAO_INVALIDA                 "Opcao invalida!\n"
-#define MEMORIA_INSUFICIENTE         "Memoria insuficiente!\n"
-#define REGISTRO_N_ENCONTRADO         "Registro(s) nao encontrado!\n"
-#define CAMPO_INVALIDO                 "Campo invalido! Informe novamente.\n"
-#define ERRO_PK_REPETIDA             "ERRO: Ja existe um registro com a chave primaria: %s.\n"
-#define ARQUIVO_VAZIO                 "Arquivo vazio!"
-#define INICIO_BUSCA                 "********************************BUSCAR********************************\n"
-#define INICIO_LISTAGEM             "********************************LISTAR********************************\n"
-#define INICIO_ALTERACAO             "********************************ALTERAR*******************************\n"
-#define INICIO_ARQUIVO                 "********************************ARQUIVO*******************************\n"
-#define INICIO_INDICE_PRIMARIO         "***************************INDICE PRIMÁRIO****************************\n"
-#define INICIO_INDICE_SECUNDARIO     "***************************INDICE SECUNDÁRIO**************************\n"
-#define SUCESSO                     "OPERACAO REALIZADA COM SUCESSO!\n"
-#define FALHA                         "FALHA AO REALIZAR OPERACAO!\n"
-#define NOS_PERCORRIDOS_IP             "Busca por %s. Nos percorridos:\n"
-#define NOS_PERCORRIDOS_IS             "Busca por %s.\nNos percorridos:\n"
+#define OPCAO_INVALIDA 				"Opcao invalida!\n"
+#define MEMORIA_INSUFICIENTE 		"Memoria insuficiente!\n"
+#define REGISTRO_N_ENCONTRADO 		"Registro(s) nao encontrado!\n"
+#define CAMPO_INVALIDO 				"Campo invalido! Informe novamente.\n"
+#define ERRO_PK_REPETIDA 			"ERRO: Ja existe um registro com a chave primaria: %s.\n"
+#define ARQUIVO_VAZIO 				"Arquivo vazio!"
+#define INICIO_BUSCA 				"********************************BUSCAR********************************\n"
+#define INICIO_LISTAGEM 			"********************************LISTAR********************************\n"
+#define INICIO_ALTERACAO 			"********************************ALTERAR*******************************\n"
+#define INICIO_ARQUIVO 				"********************************ARQUIVO*******************************\n"
+#define INICIO_INDICE_PRIMARIO 		"***************************INDICE PRIMÁRIO****************************\n"
+#define INICIO_INDICE_SECUNDARIO 	"***************************INDICE SECUNDÁRIO**************************\n"
+#define SUCESSO 					"OPERACAO REALIZADA COM SUCESSO!\n"
+#define FALHA 						"FALHA AO REALIZAR OPERACAO!\n"
+#define NOS_PERCORRIDOS_IP 			"Busca por %s. Nos percorridos:\n"
+#define NOS_PERCORRIDOS_IS 			"Busca por %s.\nNos percorridos:\n"
  
 /* Registro do Produto */
 typedef struct produto {
     char pk[TAM_PRIMARY_KEY];
     char nome[TAM_NOME];
     char marca[TAM_MARCA];
-    char data[TAM_DATA];     /* DD/MM/AAAA */
+	char data[TAM_DATA]; 	/* DD/MM/AAAA */
     char ano[TAM_ANO];
     char preco[TAM_PRECO];
     char desconto[TAM_DESCONTO];
@@ -75,17 +75,17 @@ typedef struct Chaveis {
  
 /* Estrutura das Árvores-B */
 typedef struct nodeip {
-    int num_chaves;          /* numero de chaves armazenadas */
-    Chave_ip *chave;         /* vetor das chaves e rrns [m-1] */
-    int *desc;                 /* ponteiros para os descendentes, *desc[m] */
-    char folha;                 /* flag folha da arvore */
+	int num_chaves;  		/* numero de chaves armazenadas */
+	Chave_ip *chave; 		/* vetor das chaves e rrns [m-1] */
+	int *desc;		 		/* ponteiros para os descendentes, *desc[m] */
+	char folha;		 		/* flag folha da arvore */
 } node_Btree_ip;
- 
+
 typedef struct nodeis {
-    int num_chaves;          /* numero de chaves armazenadas */
-    Chave_is *chave;         /* vetor das chaves e rrns [m-1] */
-    int *desc;                 /* ponteiros para os descendentes, *desc[m] */
-    char folha;                 /* flag folha da arvore */
+	int num_chaves;  		/* numero de chaves armazenadas */
+	Chave_is *chave; 		/* vetor das chaves e rrns [m-1] */
+	int *desc;		 		/* ponteiros para os descendentes, *desc[m] */
+	char folha;		 		/* flag folha da arvore */
 } node_Btree_is;
  
 typedef struct indice {
@@ -115,8 +115,8 @@ char ARQUIVO_IS[2000 * sizeof(Chave_is)];
 int ordem_ip;
 int ordem_is;
 int nregistros;
-int nregistrosip;     /* Número de nós presentes no ARQUIVO_IP */
-int nregistrosis;     /* Número de nós presentes no ARQUIVO_IS */
+int nregistrosip; 	/* Número de nós presentes no ARQUIVO_IP */
+int nregistrosis; 	/* Número de nós presentes no ARQUIVO_IS */
  
 /* Quantidade de bytes que ocupa cada nó da árvore nos arquivos de índice: */
 int tamanho_registro_ip;
@@ -211,8 +211,8 @@ void inserir_atraves_arquivo(Indice *iprimary, Indice *ibrand);
  
 /*
 *   Caro aluno,
-*       caso não queira trabalhar com void*, é permitido dividir as funções que utilizam
-*       em duas, sendo uma para cada índice...
+*   	caso não queira trabalhar com void*, é permitido dividir as funções que utilizam
+*   	em duas, sendo uma para cada índice...
 *   Um exemplo, a write_btree e read_btree ficariam como:
 *
 *   void write_btree_ip(node_Btree_ip *salvar, int rrn),  node_Btree_ip *read_btree_ip(int rrn),
@@ -781,8 +781,8 @@ void listar(Indice iprimary, Indice ibrand) {
 void write_btree_ip(node_Btree_ip *salvar, int rrn) {
  
     char *r = ARQUIVO_IP + rrn*tamanho_registro_ip;
-    char registroIp[tamanho_registro_ip+1];        /* String para armazenar o novo registro */
-    memset(registroIp, 0, sizeof(registroIp));    // "Zera" a string
+	char registroIp[tamanho_registro_ip+1];		/* String para armazenar o novo registro */
+	memset(registroIp, 0, sizeof(registroIp));	// "Zera" a string
  
     char nChaves[4];
     char chavePrimaria[TAM_PRIMARY_KEY];
@@ -832,8 +832,8 @@ void write_btree_ip(node_Btree_ip *salvar, int rrn) {
 void write_btree_is(node_Btree_is *salvar, int rrn) {
  
     char *r = ARQUIVO_IS + rrn*tamanho_registro_is;
-    char registroIs[tamanho_registro_is+1];        /* String para armazenar o novo registro */
-    memset(registroIs, 0, sizeof(registroIs));    // "Zera" a string
+	char registroIs[tamanho_registro_is+1];		/* String para armazenar o novo registro */
+	memset(registroIs, 0, sizeof(registroIs));	// "Zera" a string
  
     char nChaves[4];
     char chavePrimaria[TAM_PRIMARY_KEY];
@@ -1020,8 +1020,8 @@ node_Btree_ip *criar_no_ip() {
     node_Btree_ip *novo = (node_Btree_ip*) malloc(sizeof(node_Btree_ip));
     
     // Aloca os vetores
-    novo->chave = (Chave_ip*) malloc((ordem_ip-1) * sizeof(Chave_ip));    /* MAXchaves = M-1 */
-    novo->desc = (int*) malloc((ordem_ip) * sizeof(int));                /* MAXfilhos = M */
+	novo->chave = (Chave_ip*) malloc((ordem_ip-1) * sizeof(Chave_ip));	/* MAXchaves = M-1 */
+	novo->desc = (int*) malloc((ordem_ip) * sizeof(int));				/* MAXfilhos = M */
  
     // Inicializa os rrn's das chaves com -1 e os descendentes com -1
     for (int i = 0; i < ordem_ip-1; i++)
@@ -1044,8 +1044,8 @@ node_Btree_is *criar_no_is() {
     node_Btree_is *novo = (node_Btree_is*) malloc(sizeof(node_Btree_is));
     
     // Aloca os vetores
-    novo->chave = (Chave_is*) malloc((ordem_is-1) * sizeof(Chave_is));    /* MAXchaves = M-1 */
-    novo->desc = (int*) malloc((ordem_is) * sizeof(int));                /* MAXfilhos = M */
+	novo->chave = (Chave_is*) malloc((ordem_is-1) * sizeof(Chave_is));	/* MAXchaves = M-1 */
+	novo->desc = (int*) malloc((ordem_is) * sizeof(int));				/* MAXfilhos = M */
  
     // Inicializa as chaves (pk), nomes (string) e descententes
     for (int i = 0; i < ordem_is-1; i++) {
@@ -1295,7 +1295,7 @@ void em_ordem(Indice ip) {
  
 void imprime_prom_dir_ip(PromDirIp atual) {
     printf("atual.chavePromovida.pk: %s\n", atual.chave_promovida.pk);
-    printf("atual.chave_promovida.rrn: %d\n", atual.chave_promovida.pk);
+    printf("atual.chave_promovida.rrn: %d\n", atual.chave_promovida.rrn);
     printf("atual.filhoDireito: %d\n", atual.filhoDireito);
 }
  
@@ -1344,11 +1344,11 @@ PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
     }
  
  
-    Chave_ip chave_promovida;                                // Promove a chave mediana
-    chave_promovida = X->chave[(ordem_ip/2)];
- 
-    Y->desc[0] = X->desc[(ordem_ip/2)+1];                    
-    X->num_chaves = (ordem_ip / 2);                            // O número de chaves é reduzido pela metade
+	Chave_ip chave_promovida;								// Promove a chave mediana
+	chave_promovida = X->chave[(ordem_ip/2)];
+
+	Y->desc[0] = X->desc[(ordem_ip/2)+1];					
+	X->num_chaves = (ordem_ip / 2);							// O número de chaves é reduzido pela metade
  
  
     PromDirIp retorno;
@@ -1558,11 +1558,11 @@ PromDirIs divide_no_is(int rrnNo, Chave_is k, int rrnDireito) {
  
  
  
-    Chave_is chave_promovida;                                // Promove a chave mediana
-    chave_promovida = X->chave[(ordem_is/2)];
- 
-    Y->desc[0] = X->desc[(ordem_is/2)+1];                    
-    X->num_chaves = (ordem_is / 2);                            // O número de chaves é reduzido pela metade
+	Chave_is chave_promovida;								// Promove a chave mediana
+	chave_promovida = X->chave[(ordem_is/2)];
+
+	Y->desc[0] = X->desc[(ordem_is/2)+1];					
+	X->num_chaves = (ordem_is / 2);							// O número de chaves é reduzido pela metade
  
  
     PromDirIs retorno;
