@@ -1356,15 +1356,24 @@ PromDirIp divide_no_ip(int rrnNo, Chave_ip k, int rrnDireito) {
     retorno.chave_promovida = chave_promovida;
     retorno.filhoDireito = nregistrosip;
  
-    // Zera os descendentes remanescentes
-    if (X->num_chaves < ordem_ip) {
-        for (int i = ordem_ip-1; i > X->num_chaves; i--)
-            X->desc[i] = -1;
-    }
-    
-    // Zera a posicao que contem a chave promovida
-    memset(X->chave[(ordem_ip/2)].pk, 0, sizeof(X->chave[(ordem_ip/2)].pk));
-    X->chave[(ordem_ip/2)].rrn = -1;
+
+	// Conta o número de descendentes
+	int n_desc = 0;
+	for (int i = 0; i <= ordem_ip-1; i++)
+		if (X->desc[i] != -1)
+			n_desc++;
+
+	// Se o número de descendentes é maior que o número suportado por X->num_chaves, zera os descendentes remanescentes
+	if (X->num_chaves < n_desc-1) {
+		for (int i = ordem_ip-1; i > X->num_chaves; i--)
+			X->desc[i] = -1;
+	}
+	
+	// Zera a posicao que contem a chave promovida, e as seguintes
+	for (int i = (ordem_ip/2); i <= ordem_ip-2; i++) {
+		memset(X->chave[i].pk, 0, sizeof(X->chave[i].pk));
+		X->chave[i].rrn = -1;
+	}
     
  
  
